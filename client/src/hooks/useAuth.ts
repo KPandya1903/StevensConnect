@@ -14,10 +14,9 @@
  */
 
 import { useEffect } from 'react';
-import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { authApi } from '../api/auth';
-import { registerAuthHandlers } from '../api/index';
+import { api, registerAuthHandlers } from '../api/index';
 import toast from 'react-hot-toast';
 
 // Wire Axios interceptor to the store — called once at app level
@@ -50,9 +49,9 @@ export function useAuth() {
         setAccessToken(newToken);
 
         // Fetch the current user with the new token
-        const profileRes = await axios.get<{ data: import('@stevensconnect/shared').AuthUser }>(
-          '/api/users/me',
-          { headers: { Authorization: `Bearer ${newToken}` }, withCredentials: true },
+        const profileRes = await api.get<{ data: import('@stevensconnect/shared').AuthUser }>(
+          '/users/me',
+          { headers: { Authorization: `Bearer ${newToken}` } },
         );
         if (cancelled) return;
         setAuth(profileRes.data.data, newToken);
