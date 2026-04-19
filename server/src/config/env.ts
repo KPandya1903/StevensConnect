@@ -55,6 +55,10 @@ const envSchema = z.object({
 
   // Sentry (optional — only required in production)
   SENTRY_DSN: z.string().url().optional(),
+
+  // Google Drive video storage (optional — required for video uploads)
+  GOOGLE_SERVICE_ACCOUNT_JSON: z.string().optional(),
+  GOOGLE_DRIVE_FOLDER_ID: z.string().optional(),
 });
 
 // Refine: S3 fields are required when UPLOAD_STORAGE=s3
@@ -101,4 +105,5 @@ export const env = {
   isTest: raw.NODE_ENV === 'test',
   // True when SMTP is fully configured
   emailEnabled: !!(raw.SMTP_HOST && raw.SMTP_USER && raw.SMTP_PASS && raw.EMAIL_FROM),
+  videoEnabled: !!(raw.GOOGLE_SERVICE_ACCOUNT_JSON && raw.GOOGLE_DRIVE_FOLDER_ID),
 } as const;

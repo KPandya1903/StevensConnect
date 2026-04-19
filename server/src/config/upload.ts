@@ -53,4 +53,27 @@ export const avatarUpload = multer({
   },
 });
 
+const ALLOWED_VIDEO_MIME_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
+
+function videoFileFilter(
+  _req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+): void {
+  if (ALLOWED_VIDEO_MIME_TYPES.has(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only MP4, MOV, and WebM videos are allowed'));
+  }
+}
+
+export const videoUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: videoFileFilter,
+  limits: {
+    fileSize: 200 * 1024 * 1024, // 200 MB
+    files: 1,
+  },
+});
+
 export { UPLOADS_DIR };

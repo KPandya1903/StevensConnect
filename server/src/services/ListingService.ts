@@ -11,6 +11,7 @@
 
 import { ListingRepository, type CreateListingInput, type UpdateListingInput, type FindAllOptions } from '../repositories/ListingRepository';
 import { AppError } from '../middleware/errorHandler';
+import { VideoStorageService } from './VideoStorageService';
 import type { Listing, ListingStatus } from '@stevensconnect/shared';
 
 const MAX_IMAGES = 8;
@@ -38,6 +39,7 @@ function toListingShape(row: import('../repositories/ListingRepository').Listing
     marketplaceCategory: row.marketplace_category,
     condition: row.condition,
     imageUrls: row.image_urls,
+    videoUrl: row.video_url ?? null,
     locationText: row.location_text,
     viewsCount: row.views_count,
     createdAt: row.created_at.toISOString(),
@@ -159,6 +161,31 @@ export const ListingService = {
     if (!existing) throw new AppError(404, 'Listing not found', 'NOT_FOUND');
 
     await ListingRepository.createReport(reporterId, listingId, reason, details);
+  },
+
+  async addVideo(id: string, requesterId: string, buffer: Buffer, filename: string, mimeType: string): Promise<string> {
+    const existing = await ListingRepository.findById(id);
+    if (!existing) throw new AppError(404, 'Listing not found', 'NOT_FOUND');
+    if (existing.user_id !== requesterId) throw new AppError(403, 'You do not own this listing', 'FORBIDDEN');
+
+    if (existing.video_url) {
+      await VideoStorageService.deleteVideo(existing.video_url);
+    }
+
+    const embedUrl = await VideoStorageService.uploadVideo(buffer, filename, mimeType);
+    await ListingRepository.setVideo(id, embedUrl);
+    return embedUrl;
+  },
+
+  async removeVideo(id: string, requesterId: string): Promise<void> {
+    const existing = await ListingRepository.findById(id);
+    if (!existing) throw new AppError(404, 'Listing not found', 'NOT_FOUND');
+    if (existing.user_id !== requesterId) throw new AppError(403, 'You do not own this listing', 'FORBIDDEN');
+
+    if (existing.video_url) {
+      await VideoStorageService.deleteVideo(existing.video_url);
+    }
+    await ListingRepository.clearVideo(id);
   },
 
   async getSavedListings(userId: string, page?: number, limit?: number) {

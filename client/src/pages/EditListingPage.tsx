@@ -5,6 +5,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { ListingForm, type ListingFormData } from '../components/listings/ListingForm';
 import { ImageUploader } from '../components/listings/ImageUploader';
 import { Spinner } from '../components/ui/Spinner';
+import { VideoUploader } from '../components/listings/VideoUploader';
 import { listingsApi } from '../api/listings';
 import type { Listing } from '@stevensconnect/shared';
 import { useAuth } from '../hooks/useAuth';
@@ -18,6 +19,7 @@ export function EditListingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,6 +67,30 @@ export function EditListingPage() {
     if (!listing) return;
     const res = await listingsApi.removeImage(listing.id, url);
     setListing((l) => l ? { ...l, imageUrls: res.data.data.imageUrls } : l);
+  }
+
+  async function handleAddVideo(file: File) {
+    if (!listing) return;
+    setIsUploadingVideo(true);
+    try {
+      const res = await listingsApi.uploadVideo(listing.id, file);
+      setListing((l) => l ? { ...l, videoUrl: res.data.data.videoUrl } : l);
+      toast.success('Video uploaded!');
+    } catch {
+      toast.error('Failed to upload video.');
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  }
+
+  async function handleRemoveVideo() {
+    if (!listing) return;
+    try {
+      await listingsApi.removeVideo(listing.id);
+      setListing((l) => l ? { ...l, videoUrl: null } : l);
+    } catch {
+      toast.error('Failed to remove video.');
+    }
   }
 
   // ---- Render states ----
@@ -125,6 +151,19 @@ export function EditListingPage() {
               isUploading={isUploading}
             />
           </div>
+
+          {/* Video (housing only) */}
+          {listing.listingType === 'housing' && (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-base font-semibold text-gray-900">Walkthrough video (optional)</h2>
+              <VideoUploader
+                existingUrl={listing.videoUrl}
+                onAdd={handleAddVideo}
+                onRemove={handleRemoveVideo}
+                isUploading={isUploadingVideo}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

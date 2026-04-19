@@ -2,7 +2,7 @@ services:
   - type: web
     name: stevensconnect-server
     runtime: node
-    buildCommand: cd server && npm install && npm run build
+    buildCommand: cd server && npm install && npm run build && npm run migrate
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
@@ -32,4 +32,8 @@ services:
       - key: UPLOAD_STORAGE
         value: local
       - key: SENTRY_DSN
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: GOOGLE_DRIVE_FOLDER_ID
         sync: false

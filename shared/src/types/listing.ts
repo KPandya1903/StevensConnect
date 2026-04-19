@@ -36,6 +36,7 @@ export interface Listing {
   condition: ItemCondition | null;
   // Shared
   imageUrls: string[];
+  videoUrl: string | null;
   locationText: string | null;
   viewsCount: number;
   createdAt: string;

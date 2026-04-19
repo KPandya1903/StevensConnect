@@ -192,6 +192,22 @@ export function ListingDetailPage() {
               </div>
             )}
 
+            {/* Walkthrough video */}
+            {listing.videoUrl && (
+              <div>
+                <h2 className="mb-2 text-base font-semibold text-gray-900">Walkthrough video</h2>
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black">
+                  <iframe
+                    src={listing.videoUrl}
+                    className="h-full w-full"
+                    allow="autoplay"
+                    allowFullScreen
+                    title="Listing walkthrough video"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Description */}
             <div>
               <h2 className="mb-2 text-base font-semibold text-gray-900">Description</h2>
