@@ -176,7 +176,10 @@ export const listingsController = {
         file.mimetype,
       );
       res.json({ data: { videoUrl } });
-    } catch (err) { next(err); }
+    } catch (err) {
+      console.error('[uploadVideo] error:', err);
+      next(err);
+    }
   },
 
   async removeVideo(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -49,7 +49,7 @@ export function errorHandler(
   // Unexpected error — log the full error, send generic response
   console.error('[Unhandled Error]', err);
 
-  const message = env.isDevelopment && err instanceof Error ? err.message : 'Internal server error';
+  const message = err instanceof Error ? err.message : 'Internal server error';
 
   res.status(500).json({
     error: {
