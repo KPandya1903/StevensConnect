@@ -164,28 +164,4 @@ export const listingsController = {
     } catch (err) { next(err); }
   },
 
-  async uploadVideo(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const file = req.file;
-      if (!file) throw new AppError(422, 'A video file is required', 'NO_FILE');
-      const videoUrl = await ListingService.addVideo(
-        req.params.id,
-        req.user!.id,
-        file.buffer,
-        file.originalname,
-        file.mimetype,
-      );
-      res.json({ data: { videoUrl } });
-    } catch (err) {
-      console.error('[uploadVideo] error:', err);
-      next(err);
-    }
-  },
-
-  async removeVideo(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      await ListingService.removeVideo(req.params.id, req.user!.id);
-      res.json({ data: { message: 'Video removed.' } });
-    } catch (err) { next(err); }
-  },
 };

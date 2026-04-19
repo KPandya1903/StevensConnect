@@ -38,7 +38,6 @@ export interface ListingRow {
   marketplace_category: MarketplaceCategory | null;
   condition: ItemCondition | null;
   image_urls: string[];
-  video_url: string | null;
   location_text: string | null;
   views_count: number;
   created_at: Date;
@@ -355,14 +354,6 @@ export const ListingRepository = {
       ),
     ]);
     return { listings: dataResult.rows, total: parseInt(countResult.rows[0].total, 10) };
-  },
-
-  async setVideo(id: string, url: string): Promise<void> {
-    await pool.query('UPDATE listings SET video_url = $1 WHERE id = $2', [url, id]);
-  },
-
-  async clearVideo(id: string): Promise<void> {
-    await pool.query('UPDATE listings SET video_url = NULL WHERE id = $1', [id]);
   },
 
   async createReport(reporterId: string, listingId: string, reason: string, details?: string): Promise<void> {

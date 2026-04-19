@@ -56,14 +56,4 @@ export const listingsApi = {
   report: (id: string, reason: string, details?: string) =>
     api.post<{ data: { message: string } }>(`/listings/${id}/report`, { reason, details }),
 
-  uploadVideo: (id: string, file: File) => {
-    const form = new FormData();
-    form.append('video', file);
-    return api.post<{ data: { videoUrl: string } }>(`/listings/${id}/video`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
-
-  removeVideo: (id: string) =>
-    api.delete<{ data: { message: string } }>(`/listings/${id}/video`),
 };

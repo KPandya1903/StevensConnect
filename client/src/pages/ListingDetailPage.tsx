@@ -184,26 +184,12 @@ export function ListingDetailPage() {
                 </Swiper>
               </div>
             ) : (
-              <div className="flex aspect-[4/3] items-center justify-center rounded-xl border border-gray-200 bg-gray-100 text-gray-300">
-                <svg className="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 3h18M3 21h18" />
+              <div className="flex aspect-[4/3] flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
+                <svg className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75h16.5a.75.75 0 01.75.75v15a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75v-15a.75.75 0 01.75-.75z" />
                 </svg>
-              </div>
-            )}
-
-            {/* Walkthrough video */}
-            {listing.videoUrl && (
-              <div>
-                <h2 className="mb-2 text-base font-semibold text-gray-900">Walkthrough video</h2>
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
-                  <video
-                    src={listing.videoUrl}
-                    controls
-                    className="w-full"
-                    style={{ maxHeight: '480px' }}
-                  />
-                </div>
+                <span className="text-sm font-medium text-gray-400">No photos uploaded</span>
               </div>
             )}
 

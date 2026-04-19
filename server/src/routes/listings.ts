@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requireVerified } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
-import { imageUpload, videoUpload } from '../config/upload';
+import { imageUpload } from '../config/upload';
 import {
   listingsController,
   createListingSchema,
@@ -65,15 +65,4 @@ listingsRouter.post('/:id/report',
   requireVerified,
   validate(reportSchema),
   listingsController.report,
-);
-
-listingsRouter.post('/:id/video',
-  requireVerified,
-  videoUpload.single('video'),
-  listingsController.uploadVideo,
-);
-
-listingsRouter.delete('/:id/video',
-  requireVerified,
-  listingsController.removeVideo,
 );
