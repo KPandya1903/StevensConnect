@@ -62,8 +62,8 @@ const REFRESH_COOKIE_NAME = 'refresh_token';
 function setRefreshCookie(res: Response, rawToken: string): void {
   res.cookie(REFRESH_COOKIE_NAME, rawToken, {
     httpOnly: true,
-    secure: env.isProduction,
-    sameSite: 'strict',
+    secure: true,
+    sameSite: env.isProduction ? 'none' : 'strict',
     path: '/api/auth',
     maxAge: env.REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
   });
@@ -72,8 +72,8 @@ function setRefreshCookie(res: Response, rawToken: string): void {
 function clearRefreshCookie(res: Response): void {
   res.clearCookie(REFRESH_COOKIE_NAME, {
     httpOnly: true,
-    secure: env.isProduction,
-    sameSite: 'strict',
+    secure: true,
+    sameSite: env.isProduction ? 'none' : 'strict',
     path: '/api/auth',
   });
 }
