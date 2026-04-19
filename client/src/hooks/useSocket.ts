@@ -16,7 +16,8 @@ function getSocket(token: string): Socket {
   if (_socket) {
     _socket.disconnect();
   }
-  _socket = io(window.location.origin, {
+  const serverUrl = import.meta.env.VITE_API_URL ?? window.location.origin;
+  _socket = io(serverUrl, {
     auth: { token },
     transports: ['websocket'],
     autoConnect: true,
