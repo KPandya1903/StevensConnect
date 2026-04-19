@@ -39,15 +39,8 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().optional(),
 
   // File uploads
-  UPLOAD_STORAGE: z.enum(['local', 's3']).default('local'),
   UPLOAD_MAX_IMAGE_SIZE_BYTES: z.coerce.number().int().positive().default(8_388_608), // 8 MB
   UPLOAD_MAX_AVATAR_SIZE_BYTES: z.coerce.number().int().positive().default(5_242_880), // 5 MB
-
-  // AWS S3 (only required when UPLOAD_STORAGE=s3)
-  AWS_REGION: z.string().optional(),
-  AWS_ACCESS_KEY_ID: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_S3_BUCKET: z.string().optional(),
 
   // Rate limiting
   RATE_LIMIT_AUTH_MAX: z.coerce.number().int().positive().default(5),
@@ -56,32 +49,14 @@ const envSchema = z.object({
   // Sentry (optional — only required in production)
   SENTRY_DSN: z.string().url().optional(),
 
-  // Cloudinary video storage (optional — required for video uploads)
+  // Cloudinary — image and video storage
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
 });
 
-// Refine: S3 fields are required when UPLOAD_STORAGE=s3
-const refinedSchema = envSchema.refine(
-  (data) => {
-    if (data.UPLOAD_STORAGE === 's3') {
-      return (
-        !!data.AWS_REGION &&
-        !!data.AWS_ACCESS_KEY_ID &&
-        !!data.AWS_SECRET_ACCESS_KEY &&
-        !!data.AWS_S3_BUCKET
-      );
-    }
-    return true;
-  },
-  {
-    message: 'AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_BUCKET are required when UPLOAD_STORAGE=s3',
-  },
-);
-
-function parseEnv(): z.infer<typeof refinedSchema> {
-  const result = refinedSchema.safeParse(process.env);
+function parseEnv(): z.infer<typeof envSchema> {
+  const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
     console.error('\n❌ Invalid environment variables:\n');

@@ -1,26 +1,11 @@
-/**
- * File upload configuration (Multer + Sharp)
- *
- * Dev:  files saved to server/uploads/ (served as static at /uploads/)
- * Prod: files streamed to S3 (configured in Phase 6)
- *
- * All uploads are validated by MIME type via file magic bytes (not extension),
- * resized via Sharp before being stored, and size-capped.
- */
-
 import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { Request } from 'express';
 import { env } from './env';
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-// Ensure uploads directory exists (dev only)
 const UPLOADS_DIR = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
 
 function fileFilter(
   _req: Request,
