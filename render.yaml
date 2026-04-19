@@ -12,9 +12,9 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: JWT_EXPIRES_IN
-        value: 15m
+        value: 7d
       - key: REFRESH_TOKEN_EXPIRES_DAYS
         value: 30
       - key: CLIENT_ORIGIN
