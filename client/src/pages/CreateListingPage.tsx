@@ -13,13 +13,22 @@ export function CreateListingPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   async function handleCreate(data: ListingFormData) {
-    const res = await listingsApi.create(data);
-    const listing = res.data.data;
-    setCreatedId(listing.id);
-    toast.success('Listing created!');
-    // If no images, go to detail page immediately
-    if (imageUrls.length === 0) {
-      navigate(`/listings/${listing.id}`);
+    try {
+      const res = await listingsApi.create(data);
+      const listing = res.data.data;
+      setCreatedId(listing.id);
+      toast.success('Listing created!');
+      if (imageUrls.length === 0) {
+        navigate(`/listings/${listing.id}`);
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: { message?: string; fields?: Record<string, string> } } } };
+      const fields = axiosErr?.response?.data?.error?.fields;
+      if (fields) {
+        toast.error('Fix the errors below: ' + Object.values(fields).join(', '));
+      } else {
+        toast.error(axiosErr?.response?.data?.error?.message ?? 'Failed to create listing');
+      }
     }
   }
 

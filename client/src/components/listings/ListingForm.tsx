@@ -141,8 +141,16 @@ export function ListingForm({
     }
   }, [listingType, setValue]);
 
+  function handleFormSubmit(data: ListingFormData) {
+    // Strip empty strings so the server doesn't receive "" for optional enum fields
+    const cleaned = Object.fromEntries(
+      Object.entries(data).map(([k, v]) => [k, v === '' ? undefined : v])
+    ) as ListingFormData;
+    return onSubmit(cleaned);
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       {/* Type selector — disabled in edit mode */}
       <Field label="Listing type" error={errors.listingType?.message} required>
         <div className="flex gap-3">
