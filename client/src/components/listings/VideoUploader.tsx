@@ -21,14 +21,8 @@ export function VideoUploader({ existingUrl, onAdd, onRemove, isUploading = fals
   if (existingUrl) {
     return (
       <div className="space-y-3">
-        <div className="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black">
-          <iframe
-            src={existingUrl}
-            className="h-full w-full"
-            allow="autoplay"
-            allowFullScreen
-            title="Listing walkthrough video"
-          />
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
+          <video src={existingUrl} controls className="w-full" style={{ maxHeight: '320px' }} />
         </div>
         <button
           type="button"

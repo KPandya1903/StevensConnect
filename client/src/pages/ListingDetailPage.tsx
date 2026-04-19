@@ -196,13 +196,12 @@ export function ListingDetailPage() {
             {listing.videoUrl && (
               <div>
                 <h2 className="mb-2 text-base font-semibold text-gray-900">Walkthrough video</h2>
-                <div className="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black">
-                  <iframe
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
+                  <video
                     src={listing.videoUrl}
-                    className="h-full w-full"
-                    allow="autoplay"
-                    allowFullScreen
-                    title="Listing walkthrough video"
+                    controls
+                    className="w-full"
+                    style={{ maxHeight: '480px' }}
                   />
                 </div>
               </div>

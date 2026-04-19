@@ -33,7 +33,9 @@ services:
         value: local
       - key: SENTRY_DSN
         sync: false
-      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+      - key: CLOUDINARY_CLOUD_NAME
         sync: false
-      - key: GOOGLE_DRIVE_FOLDER_ID
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
