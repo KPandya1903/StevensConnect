@@ -9,7 +9,7 @@
     "type-check": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "migrate": "ts-node src/db/migrate.ts",
+    "migrate": "node dist/server/src/db/migrate.js",
     "migrate:test": "ts-node src/db/migrate.ts",
     "test": "NODE_ENV=test jest --runInBand --forceExit",
     "test:watch": "NODE_ENV=test jest --watch --runInBand --forceExit",
