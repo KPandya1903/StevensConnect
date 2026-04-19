@@ -37,7 +37,7 @@ function toListingShape(row: import('../repositories/ListingRepository').Listing
     utilitiesIncluded: row.utilities_included,
     marketplaceCategory: row.marketplace_category,
     condition: row.condition,
-    imageUrls: row.image_urls,
+    imageUrls: row.image_urls.filter((u) => u.startsWith('http')),
     locationText: row.location_text,
     viewsCount: row.views_count,
     createdAt: row.created_at.toISOString(),
