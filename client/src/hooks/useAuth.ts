@@ -41,6 +41,23 @@ export function useAuth() {
     let cancelled = false;
 
     async function restoreSession(): Promise<void> {
+      // If we already have a persisted token, verify it's still valid
+      const existingToken = useAuthStore.getState().accessToken;
+      if (existingToken) {
+        try {
+          const profileRes = await api.get<{ data: import('@stevensconnect/shared').AuthUser }>(
+            '/users/me',
+            { headers: { Authorization: `Bearer ${existingToken}` } },
+          );
+          if (cancelled) return;
+          setAuth(profileRes.data.data, existingToken);
+          setInitializing(false);
+          return;
+        } catch {
+          // Token expired or invalid — fall through to refresh
+        }
+      }
+
       try {
         const { data } = await authApi.refresh();
         if (cancelled) return;
@@ -48,7 +65,6 @@ export function useAuth() {
         const newToken = data.data.accessToken;
         setAccessToken(newToken);
 
-        // Fetch the current user with the new token
         const profileRes = await api.get<{ data: import('@stevensconnect/shared').AuthUser }>(
           '/users/me',
           { headers: { Authorization: `Bearer ${newToken}` } },
@@ -56,7 +72,6 @@ export function useAuth() {
         if (cancelled) return;
         setAuth(profileRes.data.data, newToken);
       } catch {
-        // No valid session — that's fine, user is just logged out
         clearAuth();
       } finally {
         if (!cancelled) setInitializing(false);
