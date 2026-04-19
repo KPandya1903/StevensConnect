@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ---- Server: type-check + integration tests ----
+  server:
+    name: Server (type-check + tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres_test:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: stevensconnect
+          POSTGRES_PASSWORD: stevensconnect_dev
+          POSTGRES_DB: stevensconnect_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://stevensconnect:stevensconnect_dev@localhost:5433/stevensconnect_test
+      TEST_DATABASE_URL: postgresql://stevensconnect:stevensconnect_dev@localhost:5433/stevensconnect_test
+      JWT_SECRET: ci-test-secret-that-is-at-least-32-characters-long
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_DAYS: "30"
+      CLIENT_ORIGIN: http://localhost:3000
+      SMTP_HOST: smtp.mailtrap.io
+      SMTP_PORT: "2525"
+      SMTP_USER: ci_user
+      SMTP_PASS: ci_pass
+      EMAIL_FROM: noreply@stevensconnect.com
+      UPLOAD_STORAGE: local
+      UPLOAD_MAX_IMAGE_SIZE_BYTES: "8388608"
+      UPLOAD_MAX_AVATAR_SIZE_BYTES: "5242880"
+      RATE_LIMIT_AUTH_MAX: "100"
+      RATE_LIMIT_AUTH_WINDOW_MS: "900000"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root + workspaces
+        run: npm ci
+
+      - name: Server — type-check
+        working-directory: server
+        run: npx tsc --noEmit
+
+      - name: Server — run migrations on test DB
+        working-directory: server
+        run: npm run migrate:test
+
+      - name: Server — integration tests
+        working-directory: server
+        run: npm test
+
+  # ---- Client: type-check + build ----
+  client:
+    name: Client (type-check + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root + workspaces
+        run: npm ci
+
+      - name: Client — type-check + build
+        working-directory: client
+        run: npm run build

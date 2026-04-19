@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  # Development database
+  postgres:
+    image: postgres:16-alpine
+    container_name: stevensconnect_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stevensconnect
+      POSTGRES_PASSWORD: stevensconnect_dev
+      POSTGRES_DB: stevensconnect
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U stevensconnect']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Test database — separate DB so tests never touch dev data
+  postgres_test:
+    image: postgres:16-alpine
+    container_name: stevensconnect_db_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stevensconnect
+      POSTGRES_PASSWORD: stevensconnect_dev
+      POSTGRES_DB: stevensconnect_test
+    ports:
+      - '5433:5432'
+    # No volume — test DB is ephemeral, recreated on each CI run
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U stevensconnect']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis — reserved for rate limiting and session caching in prod
+  redis:
+    image: redis:7-alpine
+    container_name: stevensconnect_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
