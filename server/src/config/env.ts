@@ -39,7 +39,7 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().optional(),
 
   // File uploads
-  UPLOAD_MAX_IMAGE_SIZE_BYTES: z.coerce.number().int().positive().default(8_388_608), // 8 MB
+  UPLOAD_MAX_IMAGE_SIZE_BYTES: z.coerce.number().int().positive().default(20_971_520), // 20 MB
   UPLOAD_MAX_AVATAR_SIZE_BYTES: z.coerce.number().int().positive().default(5_242_880), // 5 MB
 
   // Rate limiting

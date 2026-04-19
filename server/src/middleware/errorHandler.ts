@@ -46,6 +46,20 @@ export function errorHandler(
     return;
   }
 
+  // Multer file size error → friendly 413
+  if (
+    err instanceof Error &&
+    (err as NodeJS.ErrnoException).code === 'LIMIT_FILE_SIZE'
+  ) {
+    res.status(413).json({
+      error: {
+        message: 'File too large. Maximum image size is 20 MB.',
+        code: 'FILE_TOO_LARGE',
+      },
+    });
+    return;
+  }
+
   // Unexpected error — log the full error, send generic response
   console.error('[Unhandled Error]', err);
 
