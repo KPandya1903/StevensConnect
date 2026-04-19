@@ -14,6 +14,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { TokenService } from './TokenService';
 import { EmailService } from './EmailService';
 import { AppError } from '../middleware/errorHandler';
+import { env } from '../config/env';
 import type { AuthUser } from '@stevensconnect/shared';
 
 const BCRYPT_COST = 12;
@@ -82,24 +83,21 @@ export const AuthService = {
       username: normalizedUsername,
     });
 
-    // 6. Generate and store verification token
+    // 6. If email is not configured, auto-verify the user immediately
+    if (!env.emailEnabled) {
+      await UserRepository.setVerified(user.id);
+      return;
+    }
+
+    // 7. Generate and store verification token, send email
     const token = TokenService.generateVerificationToken();
     const expiresAt = TokenService.verificationTokenExpiresAt();
     await UserRepository.createEmailVerification(user.id, token, expiresAt);
 
-    // 7. Send verification email (no-op in test; logs token in dev if SMTP not configured)
     try {
       await EmailService.sendVerificationEmail(normalizedEmail, token);
     } catch (emailErr) {
-      // Never fail registration because of a transient email error.
-      // In dev without SMTP configured, log the token so you can verify manually.
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`[DEV] Email send failed. Verification token for ${normalizedEmail}: ${token}`);
-        console.warn('[DEV] Use POST /api/auth/verify-email with this token to verify manually.');
-      } else {
-        // In production, log the error but still succeed — user can use resend
-        console.error('[Email] Failed to send verification email:', emailErr);
-      }
+      console.error('[Email] Failed to send verification email:', emailErr);
     }
   },
 

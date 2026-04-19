@@ -31,12 +31,12 @@ const envSchema = z.object({
   // CORS
   CLIENT_ORIGIN: z.string().url('CLIENT_ORIGIN must be a valid URL'),
 
-  // Email
-  SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
+  // Email (all optional — if not set, email verification is skipped and users are auto-verified)
+  SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(587),
-  SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
-  SMTP_PASS: z.string().min(1, 'SMTP_PASS is required'),
-  EMAIL_FROM: z.string().email('EMAIL_FROM must be a valid email address'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
 
   // File uploads
   UPLOAD_STORAGE: z.enum(['local', 's3']).default('local'),
@@ -95,9 +95,10 @@ function parseEnv(): z.infer<typeof refinedSchema> {
 const raw = parseEnv();
 export const env = {
   ...raw,
-  // Tests always use the test database
   DATABASE_URL: raw.NODE_ENV === 'test' && raw.TEST_DATABASE_URL ? raw.TEST_DATABASE_URL : raw.DATABASE_URL,
   isProduction: raw.NODE_ENV === 'production',
   isDevelopment: raw.NODE_ENV === 'development',
   isTest: raw.NODE_ENV === 'test',
+  // True when SMTP is fully configured
+  emailEnabled: !!(raw.SMTP_HOST && raw.SMTP_USER && raw.SMTP_PASS && raw.EMAIL_FROM),
 } as const;
