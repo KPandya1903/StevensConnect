@@ -50,7 +50,6 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
     !filters.housingSubtype &&
     !filters.minPrice &&
     !filters.maxPrice &&
-    !filters.free &&
     filters.sort === 'newest' &&
     (!filters.type || !!fixedType);
 
@@ -145,17 +144,6 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
             className="w-20 rounded-lg border border-gray-300 px-2 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
           />
         </div>
-
-        {/* Free toggle */}
-        <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm hover:bg-gray-50">
-          <input
-            type="checkbox"
-            checked={!!filters.free}
-            onChange={(e) => onChange({ free: e.target.checked || undefined })}
-            className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          Free only
-        </label>
 
         {/* Sort */}
         <select

@@ -35,6 +35,7 @@ export function Navbar() {
           <NavLink to="/feed" end className={linkCls}>All</NavLink>
           <NavLink to="/marketplace" className={linkCls}>Marketplace</NavLink>
           <NavLink to="/housing" className={linkCls}>Housing</NavLink>
+          <NavLink to="/roommates" className={linkCls}>Roommates</NavLink>
           <NavLink to="/saves" className={linkCls}>Saved</NavLink>
           <NavLink to="/messages" className={({ isActive }) =>
             `relative text-sm font-medium transition ${isActive ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`

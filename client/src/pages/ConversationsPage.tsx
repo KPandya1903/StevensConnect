@@ -32,7 +32,7 @@ export function ConversationsPage() {
           <div className="rounded-xl border border-gray-200 bg-white py-16 text-center shadow-sm">
             <p className="text-base font-medium text-gray-700">No conversations yet</p>
             <p className="mt-1 text-sm text-gray-500">
-              Message a seller from any listing to get started.
+              Message a poster from any listing to get started.
             </p>
           </div>
         )}

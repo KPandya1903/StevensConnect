@@ -28,6 +28,7 @@ import { ChatPage } from '../pages/ChatPage';
 import { SavesPage } from '../pages/SavesPage';
 import { MyProfilePage } from '../pages/MyProfilePage';
 import { PublicProfilePage } from '../pages/PublicProfilePage';
+import { RoommatesPage } from '../pages/RoommatesPage';
 
 export function AppRoutes() {
   return (
@@ -44,6 +45,7 @@ export function AppRoutes() {
         <Route element={<VerifiedRoute />}>
           <Route path="/feed"        element={<FeedPage />} />
           <Route path="/housing"     element={<HousingPage />} />
+          <Route path="/roommates"   element={<RoommatesPage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           {/* Order matters: /listings/new must come before /listings/:id */}
           <Route path="/listings/new"           element={<CreateListingPage />} />
