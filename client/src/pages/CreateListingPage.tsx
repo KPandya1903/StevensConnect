@@ -4,18 +4,25 @@ import toast from 'react-hot-toast';
 import { Navbar } from '../components/layout/Navbar';
 import { ListingForm, type ListingFormData } from '../components/listings/ListingForm';
 import { ImageUploader } from '../components/listings/ImageUploader';
+import { EmojiPicker } from '../components/listings/EmojiPicker';
 import { listingsApi } from '../api/listings';
+import { emojiToFile } from '../utils/emojiToImage';
 
 export function CreateListingPage() {
   const navigate = useNavigate();
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const [createdSubtype, setCreatedSubtype] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedEmoji, setSelectedEmoji] = useState<string>('🏠');
   const [isUploading, setIsUploading] = useState(false);
+
+  const isRoommate = createdSubtype === 'roommate';
 
   async function handleCreate(data: ListingFormData) {
     try {
       const res = await listingsApi.create(data);
       setCreatedId(res.data.data.id);
+      setCreatedSubtype(data.housingSubtype ?? null);
       toast.success('Listing created!');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: { message?: string; fields?: Record<string, string> } } } };
@@ -45,6 +52,23 @@ export function CreateListingPage() {
     setImageUrls(res.data.data.imageUrls);
   }
 
+  async function handleEmojiDone() {
+    if (!createdId) return;
+    if (imageUrls.length === 0) {
+      setIsUploading(true);
+      try {
+        const file = await emojiToFile(selectedEmoji);
+        const res = await listingsApi.uploadImages(createdId, [file]);
+        setImageUrls(res.data.data.imageUrls);
+      } catch {
+        toast.error('Failed to save emoji. You can still view your listing.');
+      } finally {
+        setIsUploading(false);
+      }
+    }
+    navigate(`/listings/${createdId}`);
+  }
+
   function handleDone() {
     if (createdId) navigate(`/listings/${createdId}`);
   }
@@ -59,6 +83,25 @@ export function CreateListingPage() {
         {!createdId ? (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <ListingForm onSubmit={handleCreate} submitLabel="Create listing" />
+          </div>
+        ) : isRoommate ? (
+          <div className="space-y-6">
+            <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+              Listing created! Pick an emoji that represents you.
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-base font-semibold text-gray-900">Choose your emoji</h2>
+              <EmojiPicker selected={selectedEmoji} onChange={setSelectedEmoji} />
+            </div>
+
+            <button
+              onClick={handleEmojiDone}
+              disabled={isUploading}
+              className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              {isUploading ? 'Saving…' : 'View listing'}
+            </button>
           </div>
         ) : (
           <div className="space-y-6">

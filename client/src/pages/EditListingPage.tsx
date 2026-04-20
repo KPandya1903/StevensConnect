@@ -4,8 +4,10 @@ import toast from 'react-hot-toast';
 import { Navbar } from '../components/layout/Navbar';
 import { ListingForm, type ListingFormData } from '../components/listings/ListingForm';
 import { ImageUploader } from '../components/listings/ImageUploader';
+import { EmojiPicker } from '../components/listings/EmojiPicker';
 import { Spinner } from '../components/ui/Spinner';
 import { listingsApi } from '../api/listings';
+import { emojiToFile } from '../utils/emojiToImage';
 import type { Listing } from '@stevensconnect/shared';
 import { useAuth } from '../hooks/useAuth';
 
@@ -18,6 +20,7 @@ export function EditListingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedEmoji, setSelectedEmoji] = useState('🏠');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,6 +68,25 @@ export function EditListingPage() {
     if (!listing) return;
     const res = await listingsApi.removeImage(listing.id, url);
     setListing((l) => l ? { ...l, imageUrls: res.data.data.imageUrls } : l);
+  }
+
+  async function handleEmojiUpload() {
+    if (!listing) return;
+    setIsUploading(true);
+    try {
+      // Remove old emoji image first if present
+      for (const url of listing.imageUrls) {
+        await listingsApi.removeImage(listing.id, url);
+      }
+      const file = await emojiToFile(selectedEmoji);
+      const res = await listingsApi.uploadImages(listing.id, [file]);
+      setListing((l) => l ? { ...l, imageUrls: res.data.data.imageUrls } : l);
+      toast.success('Emoji updated!');
+    } catch {
+      toast.error('Failed to update emoji.');
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   // ---- Render states ----
@@ -115,16 +137,31 @@ export function EditListingPage() {
             />
           </div>
 
-          {/* Images */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-base font-semibold text-gray-900">Photos</h2>
-            <ImageUploader
-              existingUrls={listing.imageUrls}
-              onAdd={handleAddImages}
-              onRemoveExisting={handleRemoveImage}
-              isUploading={isUploading}
-            />
-          </div>
+          {/* Images / Emoji */}
+          {listing.housingSubtype === 'roommate' ? (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-base font-semibold text-gray-900">Your emoji</h2>
+              <EmojiPicker selected={selectedEmoji} onChange={setSelectedEmoji} />
+              <button
+                type="button"
+                onClick={handleEmojiUpload}
+                disabled={isUploading}
+                className="mt-4 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              >
+                {isUploading ? 'Saving…' : 'Save emoji'}
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-base font-semibold text-gray-900">Photos</h2>
+              <ImageUploader
+                existingUrls={listing.imageUrls}
+                onAdd={handleAddImages}
+                onRemoveExisting={handleRemoveImage}
+                isUploading={isUploading}
+              />
+            </div>
+          )}
 
         </div>
       </main>

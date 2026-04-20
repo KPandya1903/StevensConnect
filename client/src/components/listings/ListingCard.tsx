@@ -16,6 +16,7 @@ export function ListingCard({ listing, onToggleSave }: ListingCardProps) {
     bedrooms, bathrooms,
   } = listing;
 
+
   const priceLabel = formatPrice(price, isFree);
   const image = imageUrls[0];
 
@@ -27,7 +28,7 @@ export function ListingCard({ listing, onToggleSave }: ListingCardProps) {
           <img
             src={image}
             alt={title}
-            className="h-full w-full object-cover transition group-hover:scale-105"
+            className={`h-full w-full transition group-hover:scale-105 ${listingType === 'housing' && housingSubtype === 'roommate' ? 'object-contain p-4' : 'object-cover'}`}
             loading="lazy"
           />
         ) : (
