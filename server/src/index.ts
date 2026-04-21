@@ -152,6 +152,8 @@ io.use((socket, next) => {
     } catch {
       next(new Error('Invalid or expired token'));
     }
+  }).catch(() => {
+    next(new Error('Authentication error'));
   });
 });
 
