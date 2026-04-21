@@ -225,15 +225,15 @@ export const ListingRepository = {
     const page  = Math.max(opts.page ?? 1, 1);
     const offset = (page - 1) * limit;
 
+    // Snapshot values for COUNT query (no LIMIT/OFFSET, no viewerUserId)
+    const countValues = [...values];
+
     // savedSubquery (parameterized viewerUserId)
     let savedSubquery = '';
     if (opts.viewerUserId) {
       savedSubquery = `, EXISTS(SELECT 1 FROM listing_saves ls WHERE ls.listing_id = l.id AND ls.user_id = $${idx++}) AS is_saved`;
       values.push(opts.viewerUserId);
     }
-
-    // Snapshot values for COUNT query (no LIMIT/OFFSET)
-    const countValues = [...values];
 
     // Push LIMIT and OFFSET for data query
     const limitIdx = idx++;
