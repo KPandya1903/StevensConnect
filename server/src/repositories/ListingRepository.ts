@@ -13,6 +13,7 @@
  */
 
 import { pool } from '../db/pool';
+import { AppError } from '../middleware/errorHandler';
 import type { ListingType, ListingStatus, HousingSubtype, MarketplaceCategory, ItemCondition } from '@stevensconnect/shared';
 
 // ---- Row type (DB column names) ----
@@ -47,6 +48,8 @@ export interface ListingRow {
   author_username?: string;
   author_display_name?: string;
   author_avatar_url?: string | null;
+  author_university?: string | null;
+  author_grad_year?: number | null;
   // Computed (present when fetching for a specific user)
   is_saved?: boolean;
 }
@@ -147,10 +150,12 @@ export const ListingRepository = {
   async findById(id: string, viewerUserId?: string): Promise<ListingRow | null> {
     const { rows } = await pool.query<ListingRow>(
       `SELECT l.*,
-              u.id          AS author_id,
-              u.username    AS author_username,
+              u.id           AS author_id,
+              u.username     AS author_username,
               u.display_name AS author_display_name,
-              u.avatar_url  AS author_avatar_url
+              u.avatar_url   AS author_avatar_url,
+              u.university   AS author_university,
+              u.grad_year    AS author_grad_year
               ${viewerUserId ? `, EXISTS(SELECT 1 FROM listing_saves ls WHERE ls.listing_id = l.id AND ls.user_id = $2) AS is_saved` : ''}
        FROM listings l
        JOIN users u ON u.id = l.user_id
@@ -161,6 +166,10 @@ export const ListingRepository = {
   },
 
   async findAll(opts: FindAllOptions): Promise<FindAllResult> {
+    if (opts.search && opts.search.length > 500) {
+      throw new AppError(400, 'Search query too long', 'SEARCH_TOO_LONG');
+    }
+
     const conditions: string[] = ["l.status = 'active'"];
     const values: unknown[] = [];
     let idx = 1;
@@ -216,9 +225,20 @@ export const ListingRepository = {
     const page  = Math.max(opts.page ?? 1, 1);
     const offset = (page - 1) * limit;
 
-    const savedSubquery = opts.viewerUserId
-      ? `, EXISTS(SELECT 1 FROM listing_saves ls WHERE ls.listing_id = l.id AND ls.user_id = '${opts.viewerUserId}') AS is_saved`
-      : '';
+    // savedSubquery (parameterized viewerUserId)
+    let savedSubquery = '';
+    if (opts.viewerUserId) {
+      savedSubquery = `, EXISTS(SELECT 1 FROM listing_saves ls WHERE ls.listing_id = l.id AND ls.user_id = $${idx++}) AS is_saved`;
+      values.push(opts.viewerUserId);
+    }
+
+    // Snapshot values for COUNT query (no LIMIT/OFFSET)
+    const countValues = [...values];
+
+    // Push LIMIT and OFFSET for data query
+    const limitIdx = idx++;
+    const offsetIdx = idx++;
+    values.push(limit, offset);
 
     const dataQuery = `
       SELECT l.*,
@@ -231,7 +251,7 @@ export const ListingRepository = {
       JOIN users u ON u.id = l.user_id
       ${whereClause}
       ORDER BY ${orderBy}
-      LIMIT ${limit} OFFSET ${offset}
+      LIMIT $${limitIdx} OFFSET $${offsetIdx}
     `;
 
     const countQuery = `
@@ -240,7 +260,7 @@ export const ListingRepository = {
 
     const [dataResult, countResult] = await Promise.all([
       pool.query<ListingRow>(dataQuery, values),
-      pool.query<{ total: string }>(countQuery, values),
+      pool.query<{ total: string }>(countQuery, countValues),
     ]);
 
     return {
