@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireVerified } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
 import { imageUpload } from '../config/upload';
+import { listingLimiter } from '../middleware/rateLimiter';
 import {
   listingsController,
   createListingSchema,
@@ -22,6 +23,7 @@ listingsRouter.get('/:id', listingsController.getById);
 
 // Write operations — must be verified
 listingsRouter.post('/',
+  listingLimiter,
   requireVerified,
   validate(createListingSchema),
   listingsController.create,
@@ -62,6 +64,7 @@ listingsRouter.post('/:id/save',
 );
 
 listingsRouter.post('/:id/report',
+  listingLimiter,
   requireVerified,
   validate(reportSchema),
   listingsController.report,

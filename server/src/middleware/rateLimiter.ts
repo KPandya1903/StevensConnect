@@ -23,3 +23,17 @@ export const authLimiter = rateLimit({
   // Skip rate limiting in test environment
   skip: () => env.isTest,
 });
+
+export const listingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: {
+      message: 'Too many requests. Please try again later.',
+      code: 'RATE_LIMITED',
+    },
+  },
+  skip: () => env.isTest,
+});
