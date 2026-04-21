@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import type { DropzoneOptions } from 'react-dropzone';
 
 const MAX_FILES = 8;
-const MAX_SIZE_MB = 10;
+const MAX_SIZE_MB = 20;
 const ACCEPTED_TYPES: DropzoneOptions['accept'] = {
   'image/jpeg': [],
   'image/png': [],
