@@ -219,7 +219,7 @@ export const ListingRepository = {
       price_asc: 'l.price ASC NULLS LAST',
       price_desc:'l.price DESC NULLS LAST',
     };
-    const orderBy = sortMap[opts.sort ?? 'newest'];
+    const orderBy = sortMap[opts.sort ?? 'newest'] ?? sortMap['newest'];
 
     const limit = Math.min(opts.limit ?? 20, 50);
     const page  = Math.max(opts.page ?? 1, 1);
