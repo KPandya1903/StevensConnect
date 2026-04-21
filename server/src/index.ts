@@ -31,6 +31,7 @@ import morgan from 'morgan';
 import { env } from './config/env';
 import { connectDb, closeDb } from './db/pool';
 import { errorHandler } from './middleware/errorHandler';
+import { UserRepository } from './repositories/UserRepository';
 
 // Route imports (added as each phase is built)
 import path from 'path';
@@ -131,9 +132,16 @@ io.use((socket, next) => {
   }
 
   // Lazy import to avoid circular dependency
-  void import('jsonwebtoken').then(({ default: jwt }) => {
+  void import('jsonwebtoken').then(async ({ default: jwt }) => {
     try {
       const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string; email: string; username: string; isVerified: boolean };
+
+      const user = await UserRepository.findById(payload.sub);
+      if (!user || !user.is_active) {
+        next(new Error('Account inactive'));
+        return;
+      }
+
       socket.data.user = {
         id: payload.sub,
         email: payload.email,
