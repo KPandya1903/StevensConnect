@@ -38,7 +38,7 @@ export function RoommatesPage() {
         </div>
 
         <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-          Looking for a roommate? Post a listing and connect with other Stevens students.
+          Looking for a roommate? Post a listing and connect with other students on House-Mate.
         </div>
 
         {error && (
