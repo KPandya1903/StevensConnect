@@ -50,8 +50,9 @@ function toListingShape(row: import('../repositories/ListingRepository').Listing
           displayName: row.author_display_name!,
           avatarUrl: row.author_avatar_url ?? null,
           bio: null,
-          gradYear: null,
+          gradYear: row.author_grad_year ?? null,
           major: null,
+          university: row.author_university ?? null,
           createdAt: '',
         }
       : undefined,
@@ -80,8 +81,10 @@ export const ListingService = {
     const row = await ListingRepository.findById(id, viewerUserId);
     if (!row) throw new AppError(404, 'Listing not found', 'NOT_FOUND');
 
-    // Increment view count (fire and forget — don't block response)
-    void ListingRepository.incrementViews(id);
+    // Increment view count — skip if the viewer is the owner
+    if (!viewerUserId || viewerUserId !== row.user_id) {
+      void ListingRepository.incrementViews(id);
+    }
 
     return toListingShape(row);
   },
