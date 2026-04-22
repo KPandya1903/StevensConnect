@@ -21,6 +21,8 @@ function toMessage(row: import('../repositories/ConversationRepository').Message
     content: row.content,
     isDeleted: row.is_deleted,
     createdAt: row.created_at.toISOString(),
+    deliveredAt: row.delivered_at ? row.delivered_at.toISOString() : null,
+    readAt: row.read_at ? row.read_at.toISOString() : null,
   };
 }
 
@@ -54,6 +56,8 @@ function toConversation(
           content: row.last_message_is_deleted ? '' : row.last_message_content,
           isDeleted: row.last_message_is_deleted ?? false,
           createdAt: row.last_message_at.toISOString(),
+          deliveredAt: null,
+          readAt: null,
         }
       : null,
     unreadCount: parseInt(row.unread_count, 10),
@@ -125,9 +129,27 @@ export const ConversationService = {
     return toMessage(row);
   },
 
-  async markRead(conversationId: string, userId: string): Promise<void> {
+  async markRead(
+    conversationId: string,
+    userId: string,
+  ): Promise<{ messageIds: string[]; readAt: string }> {
     const ok = await ConversationRepository.isParticipant(conversationId, userId);
     if (!ok) throw new AppError(403, 'You are not part of this conversation', 'FORBIDDEN');
-    await ConversationRepository.markRead(conversationId, userId);
+    const result = await ConversationRepository.markRead(conversationId, userId);
+    return { messageIds: result.messageIds, readAt: result.readAt.toISOString() };
+  },
+
+  async markDelivered(
+    conversationId: string,
+    recipientId: string,
+  ): Promise<Array<{ messageId: string; senderId: string; deliveredAt: string }>> {
+    const ok = await ConversationRepository.isParticipant(conversationId, recipientId);
+    if (!ok) throw new AppError(403, 'You are not part of this conversation', 'FORBIDDEN');
+    const rows = await ConversationRepository.markDelivered(conversationId, recipientId);
+    return rows.map((r) => ({
+      messageId: r.messageId,
+      senderId: r.senderId,
+      deliveredAt: r.deliveredAt.toISOString(),
+    }));
   },
 };
