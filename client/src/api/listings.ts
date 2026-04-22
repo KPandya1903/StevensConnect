@@ -11,6 +11,7 @@ import type {
 export interface ListingsQuery {
   type?: ListingType;
   housingSubtype?: HousingSubtype;
+  excludeHousingSubtype?: HousingSubtype;
   category?: MarketplaceCategory;
   minPrice?: number;
   maxPrice?: number;

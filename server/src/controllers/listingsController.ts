@@ -68,13 +68,14 @@ export const listingsController = {
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const {
-        type, housingSubtype, category, minPrice, maxPrice, free,
+        type, housingSubtype, excludeHousingSubtype, category, minPrice, maxPrice, free,
         search, sort, page, limit,
       } = req.query as Record<string, string | undefined>;
 
       const result = await ListingService.getAll({
         listingType: type as ListingType | undefined,
         housingSubtype: housingSubtype as HousingSubtype | undefined,
+        excludeHousingSubtype: excludeHousingSubtype as HousingSubtype | undefined,
         marketplaceCategory: category as MarketplaceCategory | undefined,
         minPrice: minPrice ? parseFloat(minPrice) : undefined,
         maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,

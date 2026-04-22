@@ -9,7 +9,7 @@ export function HousingPage() {
   const {
     listings, isLoading, error, filters, total,
     setFilters, resetFilters, loadMore, handleToggleSave, hasMore,
-  } = useListings('housing');
+  } = useListings('housing', undefined, 'roommate');
 
   return (
     <div className="min-h-screen bg-gray-50">

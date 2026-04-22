@@ -110,6 +110,7 @@ export interface FindAllOptions {
   userId?: string;         // filter by owner
   viewerUserId?: string;   // used to compute is_saved
   status?: ListingStatus;
+  excludeHousingSubtype?: HousingSubtype; // exclude a specific subtype (e.g. 'roommate' from Housing page)
 }
 
 export interface FindAllResult {
@@ -186,6 +187,10 @@ export const ListingRepository = {
     if (opts.housingSubtype) {
       conditions.push(`l.housing_subtype = $${idx++}`);
       values.push(opts.housingSubtype);
+    }
+    if (opts.excludeHousingSubtype) {
+      conditions.push(`(l.housing_subtype IS NULL OR l.housing_subtype != $${idx++})`);
+      values.push(opts.excludeHousingSubtype);
     }
     if (opts.marketplaceCategory) {
       conditions.push(`l.marketplace_category = $${idx++}`);

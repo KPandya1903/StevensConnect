@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { listingsApi } from '../api/listings';
 import { useListingStore } from '../store/listingStore';
-import type { ListingType } from '@stevensconnect/shared';
+import type { ListingType, HousingSubtype } from '@stevensconnect/shared';
 
 /**
  * Fetches listings into the store and exposes helpers for the feed pages.
@@ -10,14 +10,14 @@ import type { ListingType } from '@stevensconnect/shared';
  * @param fixedType  When provided (e.g. 'housing'), the store type filter is
  *                   locked to that value and filters cannot change it.
  */
-export function useListings(fixedType?: ListingType) {
+export function useListings(fixedType?: ListingType, fixedHousingSubtype?: HousingSubtype, fixedExcludeSubtype?: HousingSubtype) {
   const store = useListingStore();
   const isMounted = useRef(true);
 
-  // Sync the locked type into the store on mount
+  // Sync the locked type (and optional subtype) into the store on mount
   useEffect(() => {
     if (fixedType) {
-      store.setFilters({ type: fixedType });
+      store.setFilters({ type: fixedType, ...(fixedHousingSubtype ? { housingSubtype: fixedHousingSubtype } : {}) });
     }
     // Reset store when leaving the page so stale data doesn't flash on re-entry
     return () => {
@@ -35,6 +35,8 @@ export function useListings(fixedType?: ListingType) {
       try {
         const query = { ...store.toQuery(), page };
         if (fixedType) query.type = fixedType;
+        if (fixedHousingSubtype) query.housingSubtype = fixedHousingSubtype;
+        if (fixedExcludeSubtype) query.excludeHousingSubtype = fixedExcludeSubtype;
         const res = await listingsApi.getAll(query);
         const { listings, total, totalPages } = res.data.data;
         if (page === 1) {
@@ -52,7 +54,7 @@ export function useListings(fixedType?: ListingType) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fixedType, store.filters],
+    [fixedType, fixedHousingSubtype, fixedExcludeSubtype, store.filters],
   );
 
   // Fetch page 1 whenever filters change

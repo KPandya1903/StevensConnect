@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
@@ -8,14 +7,8 @@ import { useListings } from '../hooks/useListings';
 export function RoommatesPage() {
   const {
     listings, isLoading, error, total,
-    setFilters, loadMore, handleToggleSave, hasMore,
-  } = useListings('housing');
-
-  // Lock subtype to roommate
-  useEffect(() => {
-    setFilters({ housingSubtype: 'roommate' });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    loadMore, handleToggleSave, hasMore,
+  } = useListings('housing', 'roommate');
 
   return (
     <div className="min-h-screen bg-gray-50">
