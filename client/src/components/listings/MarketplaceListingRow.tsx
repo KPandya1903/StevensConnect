@@ -19,11 +19,8 @@ export function MarketplaceListingRow({ listing, onToggleSave }: MarketplaceList
         {image ? (
           <img src={image} alt={title} className="h-full w-full object-cover transition group-hover:scale-105" loading="lazy" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75h16.5a.75.75 0 01.75.75v15a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75v-15a.75.75 0 01.75-.75z" />
-            </svg>
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg">
+            <span className="text-3xl select-none">🛍️</span>
           </div>
         )}
         {status !== 'active' && (

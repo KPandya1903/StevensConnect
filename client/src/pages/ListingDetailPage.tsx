@@ -184,12 +184,10 @@ export function ListingDetailPage() {
                 </Swiper>
               </div>
             ) : (
-              <div className="flex aspect-[4/3] flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
-                <svg className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75h16.5a.75.75 0 01.75.75v15a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75v-15a.75.75 0 01.75-.75z" />
-                </svg>
-                <span className="text-sm font-medium text-gray-400">No photos uploaded</span>
+              <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl border border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-100">
+                <span className="text-[120px] leading-none select-none">
+                  {listing.listingType === 'marketplace' ? '🛍️' : listing.housingSubtype === 'roommate' ? '🏠' : '🏡'}
+                </span>
               </div>
             )}
 
@@ -297,16 +295,24 @@ export function ListingDetailPage() {
                   <img
                     src={listing.author.avatarUrl}
                     alt={listing.author.displayName}
-                    className="h-9 w-9 shrink-0 rounded-full object-cover"
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
                     {listing.author.displayName[0]?.toUpperCase()}
                   </div>
                 )}
                 <div>
                   <p className="text-sm font-medium text-gray-900">{listing.author.displayName}</p>
-                  <p className="text-xs text-gray-500">@{listing.author.username}</p>
+                  {listing.author.university && (
+                    <p className="text-xs text-gray-500">
+                      {listing.author.university}
+                      {listing.author.gradYear ? ` · Class of ${listing.author.gradYear}` : ''}
+                    </p>
+                  )}
+                  {!listing.author.university && (
+                    <p className="text-xs text-gray-500">@{listing.author.username}</p>
+                  )}
                 </div>
               </Link>
             )}
