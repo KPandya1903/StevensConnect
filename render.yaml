@@ -2,8 +2,9 @@ services:
   - type: web
     name: stevensconnect-server
     runtime: node
-    buildCommand: cd server && npm install && npm run build && npm run migrate
-    startCommand: cd server && npm start
+    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=@stevensconnect/server && npm run migrate --workspace=@stevensconnect/server
+    startCommand: node server/dist/server/src/index.js
+    rootDir: .
     envVars:
       - key: NODE_ENV
         value: production
@@ -29,8 +30,6 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-      - key: UPLOAD_STORAGE
-        value: local
       - key: SENTRY_DSN
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
@@ -38,4 +37,8 @@ services:
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
         sync: false
