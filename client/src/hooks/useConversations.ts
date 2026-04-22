@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { conversationsApi } from '../api/conversations';
 import { useSocket } from './useSocket';
 import { useChatStore } from '../store/chatStore';
@@ -11,6 +11,8 @@ export function useConversations() {
   const socket = useSocket();
   const setConversationUnread = useChatStore((s) => s.setConversationUnread);
   const markReadTick = useChatStore((s) => s.markReadTick);
+  const setConversationUnreadRef = useRef(setConversationUnread);
+  setConversationUnreadRef.current = setConversationUnread;
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -18,18 +20,25 @@ export function useConversations() {
       const res = await conversationsApi.list();
       const convs: Conversation[] = res.data.data;
       setConversations(convs);
-      convs.forEach((c) => setConversationUnread(c.id, c.unreadCount));
+      convs.forEach((c) => setConversationUnreadRef.current(c.id, c.unreadCount));
       setError(null);
     } catch {
       setError('Could not load conversations.');
     } finally {
       setIsLoading(false);
     }
-  }, [setConversationUnread]);
+  }, []); // stable — uses ref for setConversationUnread
 
+  // Initial load
   useEffect(() => {
     void load();
-  }, [load, markReadTick]);
+  }, [load]);
+
+  // Re-fetch when a conversation is marked read (from ChatPage)
+  useEffect(() => {
+    if (markReadTick === 0) return;
+    void load();
+  }, [markReadTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When a new message arrives on any conversation, bump its lastMessageAt + unreadCount
   useEffect(() => {
@@ -41,7 +50,7 @@ export function useConversations() {
           .map((c) => {
             if (c.id !== message.conversationId) return c;
             const newCount = c.unreadCount + 1;
-            setConversationUnread(c.id, newCount);
+            setConversationUnreadRef.current(c.id, newCount);
             return {
               ...c,
               lastMessageAt: message.createdAt,
