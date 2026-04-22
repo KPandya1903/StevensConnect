@@ -2,7 +2,7 @@ services:
   - type: web
     name: stevensconnect-server
     runtime: node
-    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=@stevensconnect/server && npm run migrate --workspace=@stevensconnect/server
+    buildCommand: npm install && npm run build --workspace=@stevensconnect/server && npm run migrate --workspace=@stevensconnect/server
     startCommand: node server/dist/server/src/index.js
     rootDir: .
     envVars:
