@@ -10,6 +10,7 @@ export function useConversations() {
   const [error, setError] = useState<string | null>(null);
   const socket = useSocket();
   const setConversationUnread = useChatStore((s) => s.setConversationUnread);
+  const markReadTick = useChatStore((s) => s.markReadTick);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -28,7 +29,7 @@ export function useConversations() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, markReadTick]);
 
   // When a new message arrives on any conversation, bump its lastMessageAt + unreadCount
   useEffect(() => {

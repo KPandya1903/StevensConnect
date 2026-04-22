@@ -15,6 +15,7 @@ export function ChatPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const markConversationRead = useChatStore((s) => s.markConversationRead);
+  const bumpMarkReadTick = useChatStore((s) => s.bumpMarkReadTick);
   const [draft, setDraft] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,7 +48,10 @@ export function ChatPage() {
   // Mark read when conversation is open
   useEffect(() => {
     emitMarkRead();
-    if (conversationId) markConversationRead(conversationId);
+    if (conversationId) {
+      markConversationRead(conversationId);
+      bumpMarkReadTick();
+    }
   }, [conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSend() {

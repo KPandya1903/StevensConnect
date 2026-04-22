@@ -6,11 +6,15 @@ interface ChatState {
   setTotalUnread: (n: number) => void;
   setConversationUnread: (conversationId: string, count: number) => void;
   markConversationRead: (conversationId: string) => void;
+  // Incremented each time a conversation is marked read — useConversations watches this to reload
+  markReadTick: number;
+  bumpMarkReadTick: () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
   totalUnread: 0,
   unreadByConversation: {},
+  markReadTick: 0,
   setTotalUnread: (n) => set({ totalUnread: n }),
   setConversationUnread: (conversationId, count) => {
     const prev = get().unreadByConversation;
@@ -28,4 +32,5 @@ export const useChatStore = create<ChatState>((set, get) => ({
       totalUnread: Math.max(0, get().totalUnread - prevCount),
     });
   },
+  bumpMarkReadTick: () => set((s) => ({ markReadTick: s.markReadTick + 1 })),
 }));
