@@ -4,6 +4,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Spinner } from '../components/ui/Spinner';
 import { useMessages } from '../hooks/useMessages';
 import { useAuth } from '../hooks/useAuth';
+import { useChatStore } from '../store/chatStore';
 import { timeAgo } from '../utils/format';
 import type { Message } from '@stevensconnect/shared';
 
@@ -13,6 +14,7 @@ export function ChatPage() {
   const { id: conversationId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const markConversationRead = useChatStore((s) => s.markConversationRead);
   const [draft, setDraft] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,6 +47,7 @@ export function ChatPage() {
   // Mark read when conversation is open
   useEffect(() => {
     emitMarkRead();
+    if (conversationId) markConversationRead(conversationId);
   }, [conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSend() {

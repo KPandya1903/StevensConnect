@@ -9,20 +9,22 @@ export function useConversations() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const socket = useSocket();
-  const setTotalUnread = useChatStore((s) => s.setTotalUnread);
+  const setConversationUnread = useChatStore((s) => s.setConversationUnread);
 
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await conversationsApi.list();
-      setConversations(res.data.data);
+      const convs: Conversation[] = res.data.data;
+      setConversations(convs);
+      convs.forEach((c) => setConversationUnread(c.id, c.unreadCount));
       setError(null);
     } catch {
       setError('Could not load conversations.');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setConversationUnread]);
 
   useEffect(() => {
     void load();
@@ -37,11 +39,13 @@ export function useConversations() {
         prev
           .map((c) => {
             if (c.id !== message.conversationId) return c;
+            const newCount = c.unreadCount + 1;
+            setConversationUnread(c.id, newCount);
             return {
               ...c,
               lastMessageAt: message.createdAt,
               lastMessage: message,
-              unreadCount: c.unreadCount + 1,
+              unreadCount: newCount,
             };
           })
           .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()),
@@ -58,10 +62,5 @@ export function useConversations() {
     );
   }
 
-  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
-
-  // Keep global store in sync so Navbar badge updates without prop drilling
-  useEffect(() => { setTotalUnread(totalUnread); }, [totalUnread, setTotalUnread]);
-
-  return { conversations, isLoading, error, reload: load, markConversationRead, totalUnread };
+  return { conversations, isLoading, error, reload: load, markConversationRead };
 }
