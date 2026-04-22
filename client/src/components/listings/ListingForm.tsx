@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -136,8 +136,11 @@ export function ListingForm({
   const listingType = watch('listingType');
   const isFree = watch('isFree');
 
-  // When type changes, clear type-specific fields to avoid stale data
+  // When type changes, clear type-specific fields to avoid stale data.
+  // Skip on initial render so defaultHousingSubtype / defaultValues are preserved.
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
     if (listingType === 'marketplace') {
       setValue('housingSubtype', undefined);
       setValue('bedrooms', undefined);
