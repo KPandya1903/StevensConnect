@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Navbar } from '../components/layout/Navbar';
 import { ListingForm, type ListingFormData } from '../components/listings/ListingForm';
@@ -10,6 +10,12 @@ import { emojiToFile } from '../utils/emojiToImage';
 
 export function CreateListingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const typeParam = searchParams.get('type');
+  const defaultListingType: 'marketplace' | 'housing' | undefined =
+    typeParam === 'marketplace' ? 'marketplace' : typeParam === 'housing' || typeParam === 'roommate' ? 'housing' : undefined;
+  const defaultHousingSubtype: 'roommate' | 'apartment' | 'sublet' | undefined =
+    typeParam === 'roommate' ? 'roommate' : undefined;
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [createdSubtype, setCreatedSubtype] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -82,7 +88,12 @@ export function CreateListingPage() {
 
         {!createdId ? (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <ListingForm onSubmit={handleCreate} submitLabel="Create listing" />
+            <ListingForm
+              onSubmit={handleCreate}
+              submitLabel="Create listing"
+              defaultListingType={defaultListingType}
+              defaultHousingSubtype={defaultHousingSubtype}
+            />
           </div>
         ) : isRoommate ? (
           <div className="space-y-6">

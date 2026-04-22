@@ -48,6 +48,10 @@ export type ListingFormData = z.infer<typeof listingFormSchema>;
 interface ListingFormProps {
   /** When provided, form is in edit mode and fields are pre-filled */
   initialData?: Listing;
+  /** Pre-select and lock the listing type (used when navigating from a section page) */
+  defaultListingType?: 'marketplace' | 'housing';
+  /** Pre-select a housing subtype (e.g. 'roommate' when coming from Roommates page) */
+  defaultHousingSubtype?: 'apartment' | 'roommate' | 'sublet';
   onSubmit: (data: ListingFormData) => Promise<void>;
   isSubmitting?: boolean;
   submitLabel?: string;
@@ -88,6 +92,8 @@ function Checkbox({ label, ...props }: React.InputHTMLAttributes<HTMLInputElemen
 
 export function ListingForm({
   initialData,
+  defaultListingType,
+  defaultHousingSubtype,
   onSubmit,
   isSubmitting = false,
   submitLabel = 'Create Listing',
@@ -121,7 +127,8 @@ export function ListingForm({
           condition: initialData.condition ?? undefined,
         }
       : {
-          listingType: 'marketplace',
+          listingType: defaultListingType ?? 'marketplace',
+          housingSubtype: defaultHousingSubtype,
           isFree: false,
         },
   });
@@ -164,7 +171,7 @@ export function ListingForm({
                 {...register('listingType')}
                 type="radio"
                 value={type}
-                disabled={!!initialData}
+                disabled={!!initialData || !!defaultListingType}
                 className="sr-only"
               />
               {type === 'marketplace' ? 'Marketplace' : 'Housing'}
