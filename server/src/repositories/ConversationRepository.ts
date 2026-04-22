@@ -32,6 +32,8 @@ export interface MessageRow {
   content: string;
   is_deleted: boolean;
   created_at: Date;
+  delivered_at: Date | null;
+  read_at: Date | null;
 }
 
 // ---- Repository ----
@@ -145,7 +147,7 @@ export const ConversationRepository = {
   ): Promise<MessageRow[]> {
     if (beforeId) {
       const { rows } = await pool.query<MessageRow>(
-        `SELECT * FROM messages
+        `SELECT id, conversation_id, sender_id, content, is_deleted, created_at, delivered_at, read_at FROM messages
          WHERE conversation_id = $1
            AND created_at < (SELECT created_at FROM messages WHERE id = $2)
          ORDER BY created_at DESC
@@ -156,7 +158,7 @@ export const ConversationRepository = {
     }
 
     const { rows } = await pool.query<MessageRow>(
-      `SELECT * FROM messages
+      `SELECT id, conversation_id, sender_id, content, is_deleted, created_at, delivered_at, read_at FROM messages
        WHERE conversation_id = $1
        ORDER BY created_at DESC
        LIMIT $2`,
@@ -189,13 +191,67 @@ export const ConversationRepository = {
     }
   },
 
-  async markRead(conversationId: string, userId: string): Promise<void> {
-    await pool.query(
-      `UPDATE conversation_participants
-       SET last_read_at = NOW()
-       WHERE conversation_id = $1 AND user_id = $2`,
-      [conversationId, userId],
+  async getParticipants(conversationId: string): Promise<{ userId: string }[]> {
+    const { rows } = await pool.query<{ user_id: string }>(
+      `SELECT user_id FROM conversation_participants WHERE conversation_id = $1`,
+      [conversationId],
     );
+    return rows.map((r) => ({ userId: r.user_id }));
+  },
+
+  async markDelivered(
+    conversationId: string,
+    recipientId: string,
+  ): Promise<Array<{ messageId: string; senderId: string; deliveredAt: Date }>> {
+    const { rows } = await pool.query<{ id: string; sender_id: string; delivered_at: Date }>(
+      `UPDATE messages
+       SET delivered_at = NOW()
+       WHERE conversation_id = $1
+         AND sender_id != $2
+         AND delivered_at IS NULL
+         AND is_deleted = FALSE
+       RETURNING id, sender_id, delivered_at`,
+      [conversationId, recipientId],
+    );
+    return rows.map((r) => ({
+      messageId: r.id,
+      senderId: r.sender_id,
+      deliveredAt: r.delivered_at,
+    }));
+  },
+
+  async markRead(
+    conversationId: string,
+    userId: string,
+  ): Promise<{ messageIds: string[]; readAt: Date }> {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query<{ id: string }>(
+        `UPDATE messages
+         SET read_at = NOW()
+         WHERE conversation_id = $1
+           AND sender_id != $2
+           AND read_at IS NULL
+           AND is_deleted = FALSE
+         RETURNING id`,
+        [conversationId, userId],
+      );
+      await client.query(
+        `UPDATE conversation_participants
+         SET last_read_at = NOW()
+         WHERE conversation_id = $1 AND user_id = $2`,
+        [conversationId, userId],
+      );
+      await client.query('COMMIT');
+      const readAt = new Date();
+      return { messageIds: rows.map((r) => r.id), readAt };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   },
 
   async findById(conversationId: string): Promise<{ id: string; listing_id: string | null } | null> {
