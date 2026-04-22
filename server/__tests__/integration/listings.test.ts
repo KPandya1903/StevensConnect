@@ -57,7 +57,7 @@ describe('POST /api/listings', () => {
 
   beforeEach(async () => {
     const user = await createVerifiedUser('owner@stevens.edu', 'owner');
-    token = bearerToken(user.id, user.email, user.username);
+    token = bearerToken(user.id, user.email!, user.username);
   });
 
   it('creates a marketplace listing', async () => {
@@ -143,7 +143,7 @@ describe('GET /api/listings', () => {
 
   beforeEach(async () => {
     const user = await createVerifiedUser('owner@stevens.edu', 'owner');
-    token = bearerToken(user.id, user.email, user.username);
+    token = bearerToken(user.id, user.email!, user.username);
 
     const res = await request(app)
       .post('/api/listings')
@@ -217,8 +217,8 @@ describe('PUT /api/listings/:id', () => {
   beforeEach(async () => {
     const owner = await createVerifiedUser('owner@stevens.edu', 'owner');
     const other = await createVerifiedUser('other@stevens.edu', 'other');
-    ownerToken = bearerToken(owner.id, owner.email, owner.username);
-    otherToken = bearerToken(other.id, other.email, other.username);
+    ownerToken = bearerToken(owner.id, owner.email!, owner.username);
+    otherToken = bearerToken(other.id, other.email!, other.username);
 
     const res = await request(app)
       .post('/api/listings')
@@ -253,7 +253,7 @@ describe('PATCH /api/listings/:id/status', () => {
 
   beforeEach(async () => {
     const owner = await createVerifiedUser('owner@stevens.edu', 'owner');
-    ownerToken = bearerToken(owner.id, owner.email, owner.username);
+    ownerToken = bearerToken(owner.id, owner.email!, owner.username);
     const res = await request(app)
       .post('/api/listings')
       .set('Authorization', ownerToken)
@@ -298,8 +298,8 @@ describe('POST /api/listings/:id/save', () => {
   beforeEach(async () => {
     const owner = await createVerifiedUser('owner@stevens.edu', 'owner');
     const saver = await createVerifiedUser('saver@stevens.edu', 'saver');
-    const ownerToken = bearerToken(owner.id, owner.email, owner.username);
-    userToken = bearerToken(saver.id, saver.email, saver.username);
+    const ownerToken = bearerToken(owner.id, owner.email!, owner.username);
+    userToken = bearerToken(saver.id, saver.email!, saver.username);
 
     const res = await request(app)
       .post('/api/listings')
@@ -347,8 +347,8 @@ describe('POST /api/listings/:id/report', () => {
   beforeEach(async () => {
     const owner = await createVerifiedUser('owner@stevens.edu', 'owner');
     const reporter = await createVerifiedUser('reporter@stevens.edu', 'reporter');
-    const ownerToken = bearerToken(owner.id, owner.email, owner.username);
-    userToken = bearerToken(reporter.id, reporter.email, reporter.username);
+    const ownerToken = bearerToken(owner.id, owner.email!, owner.username);
+    userToken = bearerToken(reporter.id, reporter.email!, reporter.username);
 
     const res = await request(app)
       .post('/api/listings')

@@ -14,14 +14,17 @@ import { pool } from '../db/pool';
 
 export interface UserRow {
   id: string;
-  email: string;
-  password_hash: string;
+  email: string | null;
+  password_hash: string | null;
+  google_id: string | null;
   display_name: string;
   username: string;
   avatar_url: string | null;
   bio: string | null;
   grad_year: number | null;
   major: string | null;
+  university: string | null;
+  profile_complete: boolean;
   is_verified: boolean;
   is_active: boolean;
   created_at: Date;
@@ -59,6 +62,7 @@ export interface UpdateUserInput {
   gradYear?: number | null;
   major?: string | null;
   avatarUrl?: string | null;
+  university?: string | null;
 }
 
 // ---- Repository ----
@@ -139,6 +143,10 @@ export const UserRepository = {
       fields.push(`avatar_url = $${idx++}`);
       values.push(input.avatarUrl);
     }
+    if (input.university !== undefined) {
+      fields.push(`university = $${idx++}`);
+      values.push(input.university);
+    }
 
     if (fields.length === 0) {
       const user = await UserRepository.findById(userId);
@@ -152,6 +160,48 @@ export const UserRepository = {
       values,
     );
     return rows[0];
+  },
+
+  async findByGoogleId(googleId: string): Promise<UserRow | null> {
+    const { rows } = await pool.query<UserRow>(
+      'SELECT * FROM users WHERE google_id = $1',
+      [googleId],
+    );
+    return rows[0] ?? null;
+  },
+
+  async createFromGoogle(input: {
+    googleId: string;
+    email: string;
+    displayName: string;
+    avatarUrl: string | null;
+  }): Promise<UserRow> {
+    // Generate a unique username from display name
+    const base = input.displayName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20) || 'user';
+    const suffix = Math.random().toString(36).slice(2, 7);
+    const username = `${base}${suffix}`;
+
+    const { rows } = await pool.query<UserRow>(
+      `INSERT INTO users (google_id, email, display_name, username, avatar_url, is_verified, profile_complete)
+       VALUES ($1, $2, $3, $4, $5, TRUE, FALSE)
+       RETURNING *`,
+      [input.googleId, input.email, input.displayName, username, input.avatarUrl],
+    );
+    return rows[0];
+  },
+
+  async linkGoogleId(userId: string, googleId: string): Promise<void> {
+    await pool.query(
+      'UPDATE users SET google_id = $1 WHERE id = $2',
+      [googleId, userId],
+    );
+  },
+
+  async markProfileComplete(userId: string): Promise<void> {
+    await pool.query(
+      'UPDATE users SET profile_complete = TRUE WHERE id = $1',
+      [userId],
+    );
   },
 
   // ---- Email verifications ----

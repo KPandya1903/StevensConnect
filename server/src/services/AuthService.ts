@@ -10,6 +10,7 @@
  */
 
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import { UserRepository } from '../repositories/UserRepository';
 import { TokenService } from './TokenService';
 import { EmailService } from './EmailService';
@@ -21,7 +22,7 @@ const BCRYPT_COST = 12;
 const STEVENS_EMAIL_DOMAIN = '@stevens.edu';
 
 // ---- Helper: map DB row to the shared AuthUser type ----
-function toAuthUser(row: { id: string; email: string; username: string; display_name: string; avatar_url: string | null; is_verified: boolean }): AuthUser {
+function toAuthUser(row: { id: string; email: string | null; username: string; display_name: string; avatar_url: string | null; is_verified: boolean; profile_complete: boolean }): AuthUser {
   return {
     id: row.id,
     email: row.email,
@@ -29,6 +30,7 @@ function toAuthUser(row: { id: string; email: string; username: string; display_
     displayName: row.display_name,
     avatarUrl: row.avatar_url,
     isVerified: row.is_verified,
+    profileComplete: row.profile_complete,
   };
 }
 
@@ -135,7 +137,8 @@ export const AuthService = {
     if (!user) throw INVALID_CREDENTIALS;
     if (!user.is_active) throw new AppError(403, 'This account has been deactivated', 'ACCOUNT_DEACTIVATED');
 
-    // 2. Verify password
+    // 2. Verify password (password_hash may be null for Google-only accounts)
+    if (!user.password_hash) throw INVALID_CREDENTIALS;
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) throw INVALID_CREDENTIALS;
 
@@ -147,7 +150,7 @@ export const AuthService = {
     // 4. Sign access token
     const accessToken = TokenService.signAccessToken({
       sub: user.id,
-      email: user.email,
+      email: user.email ?? '',
       username: user.username,
       isVerified: user.is_verified,
     });
@@ -189,7 +192,7 @@ export const AuthService = {
     // Issue new tokens
     const newAccessToken = TokenService.signAccessToken({
       sub: user.id,
-      email: user.email,
+      email: user.email ?? '',
       username: user.username,
       isVerified: user.is_verified,
     });
@@ -210,6 +213,74 @@ export const AuthService = {
   async logout(rawRefreshToken: string): Promise<void> {
     const tokenHash = TokenService.hashRefreshToken(rawRefreshToken);
     await UserRepository.revokeRefreshToken(tokenHash);
+  },
+
+  /**
+   * Sign in (or sign up) with a Google ID token.
+   * Verifies the token, finds or creates the user, returns tokens.
+   */
+  async loginWithGoogle(credential: string): Promise<LoginResult & { isNewUser: boolean }> {
+    if (!env.GOOGLE_CLIENT_ID) {
+      throw new AppError(503, 'Google sign-in is not configured', 'GOOGLE_AUTH_DISABLED');
+    }
+
+    const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+    let payload;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      throw new AppError(401, 'Invalid Google credential', 'INVALID_GOOGLE_TOKEN');
+    }
+
+    if (!payload?.sub) {
+      throw new AppError(401, 'Invalid Google token payload', 'INVALID_GOOGLE_TOKEN');
+    }
+
+    const googleId = payload.sub;
+    const email = payload.email ?? null;
+    const displayName = payload.name ?? 'User';
+    const avatarUrl = payload.picture ?? null;
+
+    // Find existing user by google_id first, then by email
+    let user = await UserRepository.findByGoogleId(googleId);
+    let isNewUser = false;
+
+    if (!user && email) {
+      user = await UserRepository.findByEmail(email);
+      if (user) {
+        // Existing email-password user — link google_id
+        await UserRepository.linkGoogleId(user.id, googleId);
+        user = await UserRepository.findById(user.id);
+      }
+    }
+
+    if (!user) {
+      user = await UserRepository.createFromGoogle({ googleId, email: email ?? '', displayName, avatarUrl });
+      isNewUser = true;
+    }
+
+    if (!user) throw new AppError(500, 'Failed to create user', 'USER_CREATE_FAILED');
+
+    const accessToken = TokenService.signAccessToken({
+      sub: user.id,
+      email: user.email ?? '',
+      username: user.username,
+      isVerified: user.is_verified,
+    });
+
+    const { rawToken, tokenHash } = TokenService.generateRefreshToken();
+    await UserRepository.createRefreshToken(user.id, tokenHash, TokenService.refreshTokenExpiresAt());
+
+    return {
+      accessToken,
+      rawRefreshToken: rawToken,
+      user: toAuthUser(user),
+      isNewUser: isNewUser || !user.profile_complete,
+    };
   },
 
   /**

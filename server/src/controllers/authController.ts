@@ -55,6 +55,10 @@ export const resendVerificationSchema = z.object({
   email: z.string().email().toLowerCase().trim(),
 });
 
+export const googleAuthSchema = z.object({
+  credential: z.string().min(1, 'Google credential is required'),
+});
+
 // ---- Cookie helpers ----
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
@@ -148,6 +152,18 @@ export const authController = {
       }
       clearRefreshCookie(res);
       res.json({ data: { message: 'Logged out successfully.' } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async googleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { credential } = req.body as z.infer<typeof googleAuthSchema>;
+      const { accessToken, rawRefreshToken, user, isNewUser } = await AuthService.loginWithGoogle(credential);
+
+      setRefreshCookie(res, rawRefreshToken);
+      res.json({ data: { accessToken, user, isNewUser } });
     } catch (err) {
       next(err);
     }

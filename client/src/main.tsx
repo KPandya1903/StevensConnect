@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import * as Sentry from '@sentry/react';
 import App from './App';
 import './index.css';
@@ -20,6 +21,7 @@ const SentryErrorBoundary = Sentry.ErrorBoundary;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string ?? ''}>
     <SentryErrorBoundary fallback={
       <div className="flex min-h-screen items-center justify-center text-center px-4">
         <div>
@@ -46,5 +48,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       />
     </BrowserRouter>
     </SentryErrorBoundary>
+    </GoogleOAuthProvider>
   </React.StrictMode>,
 );

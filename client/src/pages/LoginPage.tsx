@@ -1,103 +1,49 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../hooks/useAuth';
-import { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 
-const schema = z.object({
-  email: z.string().email('Must be a valid email'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type FormData = z.infer<typeof schema>;
-
 export function LoginPage() {
-  const { login } = useAuth();
+  const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: Location } | null)?.from?.pathname ?? '/feed';
+  const from = (location.state as { from?: Location } | null)?.from?.pathname ?? '/marketplace';
 
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
-
-  async function onSubmit(data: FormData) {
+  async function handleGoogleSuccess(credentialResponse: { credential?: string }) {
+    if (!credentialResponse.credential) {
+      toast.error('Sign-in failed. Please try again.');
+      return;
+    }
     try {
-      await login(data.email, data.password);
-      void navigate(from, { replace: true });
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        const body = err.response?.data as { error?: { code?: string; message?: string } } | undefined;
-        const code = body?.error?.code;
-        const message = body?.error?.message ?? 'Login failed';
-
-        if (code === 'EMAIL_NOT_VERIFIED') {
-          toast.error('Please verify your email before logging in. Check your inbox.');
-        } else if (code === 'INVALID_CREDENTIALS' || code === 'ACCOUNT_DEACTIVATED') {
-          setError('password', { message });
-        } else {
-          toast.error(message);
-        }
+      const { isNewUser } = await loginWithGoogle(credentialResponse.credential);
+      if (isNewUser) {
+        navigate('/complete-profile', { replace: true });
       } else {
-        toast.error('Something went wrong. Please try again.');
+        navigate(from, { replace: true });
       }
+    } catch {
+      toast.error('Sign-in failed. Please try again.');
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <Link to="/" className="text-2xl font-bold text-primary-700">StevensConnect</Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Sign in</h1>
-          <p className="mt-1 text-sm text-gray-500">Welcome back, Duck</p>
+          <span className="text-3xl font-bold text-blue-700">House-Mate</span>
+          <h1 className="mt-4 text-xl font-semibold text-gray-900">Welcome</h1>
+          <p className="mt-1 text-sm text-gray-500">Sign in with your Google account to continue</p>
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="space-y-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              {...register('email')}
-              type="email"
-              placeholder="you@stevens.edu"
-              autoComplete="email"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-            />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              {...register('password')}
-              type="password"
-              placeholder="Your password"
-              autoComplete="current-password"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-            />
-            {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-primary-700 py-2.5 text-sm font-semibold text-white hover:bg-primary-800 disabled:opacity-60 transition-colors mt-2"
-          >
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="font-medium text-primary-700 hover:text-primary-800">
-            Create one
-          </Link>
-        </p>
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <GoogleLogin
+            onSuccess={(credentialResponse) => void handleGoogleSuccess(credentialResponse)}
+            onError={() => toast.error('Sign-in failed. Please try again.')}
+            useOneTap
+            size="large"
+            width="280"
+          />
+        </div>
       </div>
     </div>
   );

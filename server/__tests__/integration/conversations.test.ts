@@ -42,7 +42,7 @@ describe('POST /api/conversations', () => {
   beforeEach(async () => {
     userA = await createVerifiedUser('usera@stevens.edu', 'usera');
     userB = await createVerifiedUser('userb@stevens.edu', 'userb');
-    tokenA = bearer(userA.id, userA.email, userA.username);
+    tokenA = bearer(userA.id, userA.email!, userA.username);
   });
 
   it('creates a conversation between two users', async () => {
@@ -108,8 +108,8 @@ describe('GET /api/conversations', () => {
   beforeEach(async () => {
     userA = await createVerifiedUser('usera@stevens.edu', 'usera');
     userB = await createVerifiedUser('userb@stevens.edu', 'userb');
-    tokenA = bearer(userA.id, userA.email, userA.username);
-    tokenB = bearer(userB.id, userB.email, userB.username);
+    tokenA = bearer(userA.id, userA.email!, userA.username);
+    tokenB = bearer(userB.id, userB.email!, userB.username);
 
     // Start a conversation
     await request(app)
@@ -143,7 +143,7 @@ describe('GET /api/conversations', () => {
 
   it('unrelated user sees empty list', async () => {
     const userC = await createVerifiedUser('userc@stevens.edu', 'userc');
-    const tokenC = bearer(userC.id, userC.email, userC.username);
+    const tokenC = bearer(userC.id, userC.email!, userC.username);
 
     const res = await request(app)
       .get('/api/conversations')
@@ -165,8 +165,8 @@ describe('GET /api/conversations/:id/messages', () => {
     userA = await createVerifiedUser('usera@stevens.edu', 'usera');
     const userB = await createVerifiedUser('userb@stevens.edu', 'userb');
     userC = await createVerifiedUser('userc@stevens.edu', 'userc');
-    tokenA = bearer(userA.id, userA.email, userA.username);
-    tokenC = bearer(userC.id, userC.email, userC.username);
+    tokenA = bearer(userA.id, userA.email!, userA.username);
+    tokenC = bearer(userC.id, userC.email!, userC.username);
 
     const res = await request(app)
       .post('/api/conversations')
@@ -205,7 +205,7 @@ describe('GET /api/conversations/:id/messages', () => {
 
   it('returns empty messages for new conversation', async () => {
     const userD = await createVerifiedUser('userd@stevens.edu', 'userd');
-    const tokenD = bearer(userD.id, userD.email, userD.username);
+    const tokenD = bearer(userD.id, userD.email!, userD.username);
     const convRes = await request(app)
       .post('/api/conversations')
       .set('Authorization', tokenA)

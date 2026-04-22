@@ -42,6 +42,7 @@ function toConversation(
         bio: null,
         gradYear: null,
         major: null,
+        university: null,
         createdAt: '',
       },
     ],

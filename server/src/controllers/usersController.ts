@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { UserRepository } from '../repositories/UserRepository';
+import type { UserRow } from '../repositories/UserRepository';
 import { ListingService } from '../services/ListingService';
 import { StorageService } from '../services/StorageService';
 import { AppError } from '../middleware/errorHandler';
@@ -11,23 +12,34 @@ export const updateProfileSchema = z.object({
   bio: z.string().max(500).trim().nullable().optional(),
   gradYear: z.coerce.number().int().min(2000).max(2100).nullable().optional(),
   major: z.string().max(100).trim().nullable().optional(),
+  university: z.string().max(150).trim().nullable().optional(),
 });
+
+export const completeProfileSchema = z.object({
+  displayName: z.string().min(2).max(100).trim(),
+  bio: z.string().max(500).trim().optional(),
+  university: z.string().max(150).trim().optional(),
+  gradYear: z.coerce.number().int().min(2000).max(2100).optional(),
+});
+
+function toAuthUser(user: UserRow): AuthUser {
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    displayName: user.display_name,
+    avatarUrl: user.avatar_url,
+    isVerified: user.is_verified,
+    profileComplete: user.profile_complete,
+  };
+}
 
 export const usersController = {
   async getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const user = await UserRepository.findById(req.user!.id);
       if (!user) throw new AppError(404, 'User not found', 'NOT_FOUND');
-
-      const authUser: AuthUser = {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        displayName: user.display_name,
-        avatarUrl: user.avatar_url,
-        isVerified: user.is_verified,
-      };
-      res.json({ data: authUser });
+      res.json({ data: toAuthUser(user) });
     } catch (err) {
       next(err);
     }
@@ -41,17 +53,25 @@ export const usersController = {
         bio: input.bio,
         gradYear: input.gradYear,
         major: input.major,
+        university: input.university,
       });
+      res.json({ data: toAuthUser(updated) });
+    } catch (err) { next(err); }
+  },
 
-      const authUser: AuthUser = {
-        id: updated.id,
-        email: updated.email,
-        username: updated.username,
-        displayName: updated.display_name,
-        avatarUrl: updated.avatar_url,
-        isVerified: updated.is_verified,
-      };
-      res.json({ data: authUser });
+  async completeProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = req.body as z.infer<typeof completeProfileSchema>;
+      await UserRepository.update(req.user!.id, {
+        displayName: input.displayName,
+        bio: input.bio ?? null,
+        university: input.university ?? null,
+        gradYear: input.gradYear ?? null,
+      });
+      await UserRepository.markProfileComplete(req.user!.id);
+      const updated = await UserRepository.findById(req.user!.id);
+      if (!updated) throw new AppError(404, 'User not found', 'NOT_FOUND');
+      res.json({ data: toAuthUser(updated) });
     } catch (err) { next(err); }
   },
 
@@ -62,16 +82,7 @@ export const usersController = {
 
       const url = await StorageService.saveImage(file.buffer, 'avatar', req.user!.id);
       const updated = await UserRepository.update(req.user!.id, { avatarUrl: url });
-
-      const authUser: AuthUser = {
-        id: updated.id,
-        email: updated.email,
-        username: updated.username,
-        displayName: updated.display_name,
-        avatarUrl: updated.avatar_url,
-        isVerified: updated.is_verified,
-      };
-      res.json({ data: authUser });
+      res.json({ data: toAuthUser(updated) });
     } catch (err) { next(err); }
   },
 
@@ -100,6 +111,29 @@ export const usersController = {
         bio: user.bio,
         gradYear: user.grad_year,
         major: user.major,
+        university: user.university,
+        createdAt: user.created_at.toISOString(),
+      };
+      res.json({ data: publicUser });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getPublicById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const user = await UserRepository.findById(req.params.id);
+      if (!user || !user.is_active) throw new AppError(404, 'User not found', 'NOT_FOUND');
+
+      const publicUser: PublicUser = {
+        id: user.id,
+        username: user.username,
+        displayName: user.display_name,
+        avatarUrl: user.avatar_url,
+        bio: user.bio,
+        gradYear: user.grad_year,
+        major: user.major,
+        university: user.university,
         createdAt: user.created_at.toISOString(),
       };
       res.json({ data: publicUser });

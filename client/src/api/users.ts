@@ -6,8 +6,16 @@ export const usersApi = {
     return api.get<{ data: AuthUser }>('/users/me');
   },
 
-  updateMe(input: { displayName?: string; bio?: string | null; gradYear?: number | null; major?: string | null }) {
+  updateMe(input: { displayName?: string; bio?: string | null; gradYear?: number | null; major?: string | null; university?: string | null }) {
     return api.patch<{ data: AuthUser }>('/users/me', input);
+  },
+
+  completeProfile(input: { displayName: string; bio?: string; university?: string; gradYear?: number }) {
+    return api.post<{ data: AuthUser }>('/users/me/complete-profile', input);
+  },
+
+  getPublicById(id: string) {
+    return api.get<{ data: PublicUser }>(`/users/public/${id}`);
   },
 
   uploadAvatar(file: File) {
