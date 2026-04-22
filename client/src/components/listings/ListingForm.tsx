@@ -161,27 +161,29 @@ export function ListingForm({
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {/* Type selector — disabled in edit mode */}
-      <Field label="Listing type" error={errors.listingType?.message} required>
-        <div className="flex gap-3">
-          {(['marketplace', 'housing'] as const).map((type) => (
-            <label key={type} className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition
-              data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-50 data-[selected=true]:text-blue-700
-              border-gray-300 text-gray-700 hover:border-gray-400"
-              data-selected={listingType === type}
-            >
-              <input
-                {...register('listingType')}
-                type="radio"
-                value={type}
-                disabled={!!initialData || !!defaultListingType}
-                className="sr-only"
-              />
-              {type === 'marketplace' ? 'Marketplace' : 'Housing'}
-            </label>
-          ))}
-        </div>
-      </Field>
+      {/* Type selector — hidden when locked to a single type, disabled in edit mode */}
+      {!defaultListingType && (
+        <Field label="Listing type" error={errors.listingType?.message} required>
+          <div className="flex gap-3">
+            {(['marketplace', 'housing'] as const).map((type) => (
+              <label key={type} className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition
+                data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-50 data-[selected=true]:text-blue-700
+                border-gray-300 text-gray-700 hover:border-gray-400"
+                data-selected={listingType === type}
+              >
+                <input
+                  {...register('listingType')}
+                  type="radio"
+                  value={type}
+                  disabled={!!initialData}
+                  className="sr-only"
+                />
+                {type === 'marketplace' ? 'Marketplace' : 'Housing'}
+              </label>
+            ))}
+          </div>
+        </Field>
+      )}
 
       {/* Title */}
       <Field label="Title" error={errors.title?.message} required>
