@@ -4,18 +4,40 @@ import { Navbar } from '../components/layout/Navbar';
 import { Spinner } from '../components/ui/Spinner';
 import { useMessages } from '../hooks/useMessages';
 import { useAuth } from '../hooks/useAuth';
-import { useChatStore } from '../store/chatStore';
 import { timeAgo } from '../utils/format';
-import type { Message } from '@stevensconnect/shared';
+import { getMessageStatus } from '@stevensconnect/shared';
+import type { Message, MessageStatus } from '@stevensconnect/shared';
 
 const TYPING_DEBOUNCE_MS = 1500;
+
+function MessageTicks({ status }: { status: MessageStatus }) {
+  if (status === 'sending') return null;
+  const gray = '#9ca3af';
+  const blue = '#2563eb';
+  if (status === 'sent') {
+    return (
+      <span className="inline-flex items-center ml-1">
+        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+          <path d="M1 5l3 3 7-7" stroke={gray} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  }
+  const color = status === 'read' ? blue : gray;
+  return (
+    <span className="inline-flex items-center ml-1">
+      <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+        <path d="M1 5l3 3 7-7" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M5 5l3 3 7-7" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
 
 export function ChatPage() {
   const { id: conversationId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const markConversationRead = useChatStore((s) => s.markConversationRead);
-  const bumpMarkReadTick = useChatStore((s) => s.bumpMarkReadTick);
   const [draft, setDraft] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -23,36 +45,31 @@ export function ChatPage() {
 
   const {
     messages, isLoading, isFetchingMore, hasMore,
-    typingUsers, sendMessage, loadMore, emitTyping, emitStopTyping, emitMarkRead,
+    typingUsers, sendMessage, loadMore, emitTyping, emitStopTyping, emitMessagesRead,
   } = useMessages(conversationId!);
 
-  // Scroll to bottom on initial load
+  // Scroll to bottom on initial load and mark read
   useEffect(() => {
     if (!isLoading) {
       bottomRef.current?.scrollIntoView({ behavior: 'instant' });
+      emitMessagesRead();
     }
-  }, [isLoading]);
+  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Scroll to bottom when new message arrives (only if near bottom)
+  // Mark read + scroll when new messages arrive while viewing
   const prevLengthRef = useRef(0);
   useEffect(() => {
     if (messages.length > prevLengthRef.current) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg?.senderId === user?.id) {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // New message from the other person — mark read immediately since we're viewing
+        emitMessagesRead();
       }
       prevLengthRef.current = messages.length;
     }
-  }, [messages, user?.id]);
-
-  // Mark read when conversation is open
-  useEffect(() => {
-    emitMarkRead();
-    if (conversationId) {
-      markConversationRead(conversationId);
-      bumpMarkReadTick();
-    }
-  }, [conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [messages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSend() {
     const trimmed = draft.trim();
@@ -72,12 +89,10 @@ export function ChatPage() {
 
   function handleDraftChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setDraft(e.target.value);
-
     if (!isTypingRef.current) {
       emitTyping();
       isTypingRef.current = true;
     }
-
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     typingTimerRef.current = setTimeout(() => {
       emitStopTyping();
@@ -85,7 +100,6 @@ export function ChatPage() {
     }, TYPING_DEBOUNCE_MS);
   }
 
-  // Load older messages when user scrolls to top
   function handleScroll(e: React.UIEvent<HTMLDivElement>) {
     if (e.currentTarget.scrollTop < 80 && hasMore && !isFetchingMore) {
       void loadMore();
@@ -119,7 +133,6 @@ export function ChatPage() {
         className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
         onScroll={handleScroll}
       >
-        {/* Load-more indicator at top */}
         {isFetchingMore && (
           <div className="flex justify-center py-2">
             <Spinner size="sm" />
@@ -157,7 +170,7 @@ export function ChatPage() {
                     {timeAgo(msg.createdAt)}
                   </p>
                 )}
-                <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                   <div
                     className={`max-w-[72%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed
                       ${isMine
@@ -169,13 +182,17 @@ export function ChatPage() {
                   >
                     {msg.isDeleted ? 'This message was deleted' : msg.content}
                   </div>
+                  {isMine && (
+                    <div className="flex justify-end mt-0.5 pr-1">
+                      <MessageTicks status={getMessageStatus(msg)} />
+                    </div>
+                  )}
                 </div>
               </div>
             );
           })
         )}
 
-        {/* Typing indicator */}
         {typingUsers.length > 0 && (
           <div className="flex justify-start pt-1">
             <div className="rounded-2xl rounded-bl-sm border border-gray-200 bg-white px-4 py-2.5 shadow-sm">
