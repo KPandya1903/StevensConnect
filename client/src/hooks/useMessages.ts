@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { conversationsApi } from '../api/conversations';
 import { useSocket } from './useSocket';
-import type { Message } from '@stevensconnect/shared';
+import type { Message, MessageDeliveredEvent, MessageReadEvent } from '@stevensconnect/shared';
 
 export function useMessages(conversationId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -13,13 +13,11 @@ export function useMessages(conversationId: string) {
   const socket = useSocket();
   const joinedRef = useRef(false);
 
-  // Initial load
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await conversationsApi.getMessages(conversationId);
       const { messages: msgs, hasMore: more, nextCursor: cursor } = res.data.data;
-      // API returns newest-first; reverse so oldest is at top
       setMessages([...msgs].reverse());
       setHasMore(more);
       setNextCursor(cursor);
@@ -32,7 +30,6 @@ export function useMessages(conversationId: string) {
     void load();
   }, [load]);
 
-  // Join socket room for this conversation
   useEffect(() => {
     if (!socket || joinedRef.current) return;
     socket.emit('join_conversation', { conversationId });
@@ -44,16 +41,35 @@ export function useMessages(conversationId: string) {
     };
   }, [socket, conversationId]);
 
-  // Listen for incoming messages
   useEffect(() => {
     if (!socket) return;
 
-    function handleNewMessage(message: Message) {
+    function handleMessageNew(message: Message) {
       if (message.conversationId !== conversationId) return;
       setMessages((prev) => {
         if (prev.some((m) => m.id === message.id)) return prev;
         return [...prev, message];
       });
+    }
+
+    function handleMessageAck(message: Message) {
+      if (message.conversationId !== conversationId) return;
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+    }
+
+    function handleMessageDelivered({ messageId, deliveredAt }: MessageDeliveredEvent) {
+      setMessages((prev) =>
+        prev.map((m) => m.id === messageId ? { ...m, deliveredAt } : m),
+      );
+    }
+
+    function handleMessageRead({ messageIds, readAt }: MessageReadEvent) {
+      setMessages((prev) =>
+        prev.map((m) => messageIds.includes(m.id) ? { ...m, readAt } : m),
+      );
     }
 
     function handleTyping({ username }: { userId: string; username: string }) {
@@ -68,18 +84,23 @@ export function useMessages(conversationId: string) {
       });
     }
 
-    socket.on('new_message', handleNewMessage);
+    socket.on('message:new', handleMessageNew);
+    socket.on('message:ack', handleMessageAck);
+    socket.on('message:delivered', handleMessageDelivered);
+    socket.on('message:read', handleMessageRead);
     socket.on('user_typing', handleTyping);
     socket.on('user_stop_typing', handleStopTyping);
 
     return () => {
-      socket.off('new_message', handleNewMessage);
+      socket.off('message:new', handleMessageNew);
+      socket.off('message:ack', handleMessageAck);
+      socket.off('message:delivered', handleMessageDelivered);
+      socket.off('message:read', handleMessageRead);
       socket.off('user_typing', handleTyping);
       socket.off('user_stop_typing', handleStopTyping);
     };
   }, [socket, conversationId]);
 
-  // Load older messages (scroll up)
   async function loadMore() {
     if (!hasMore || !nextCursor || isFetchingMore) return;
     setIsFetchingMore(true);
@@ -107,8 +128,8 @@ export function useMessages(conversationId: string) {
     socket?.emit('stop_typing', { conversationId });
   }
 
-  function emitMarkRead() {
-    socket?.emit('mark_read', { conversationId });
+  function emitMessagesRead() {
+    socket?.emit('messages:read', { conversationId });
   }
 
   return {
@@ -121,6 +142,6 @@ export function useMessages(conversationId: string) {
     loadMore,
     emitTyping,
     emitStopTyping,
-    emitMarkRead,
+    emitMessagesRead,
   };
 }
