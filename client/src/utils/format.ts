@@ -50,6 +50,15 @@ export function labelForCondition(cond: string): string {
   return map[cond] ?? cond;
 }
 
+export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
+
+export function getMessageStatus(msg: { id: string; deliveredAt: string | null; readAt: string | null }): MessageStatus {
+  if (msg.readAt) return 'read';
+  if (msg.deliveredAt) return 'delivered';
+  if (msg.id) return 'sent';
+  return 'sending';
+}
+
 export function labelForHousingSubtype(sub: string): string {
   const map: Record<string, string> = {
     apartment: 'Apartment',

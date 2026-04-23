@@ -4,9 +4,8 @@ import { Navbar } from '../components/layout/Navbar';
 import { Spinner } from '../components/ui/Spinner';
 import { useMessages } from '../hooks/useMessages';
 import { useAuth } from '../hooks/useAuth';
-import { timeAgo } from '../utils/format';
-import { getMessageStatus } from '@stevensconnect/shared';
-import type { Message, MessageStatus } from '@stevensconnect/shared';
+import { timeAgo, getMessageStatus, type MessageStatus } from '../utils/format';
+import type { Message } from '@stevensconnect/shared';
 
 const TYPING_DEBOUNCE_MS = 1500;
 

@@ -1,4 +1,4 @@
-# StevensConnect
+# House - Mate
 
 A marketplace and networking platform for Stevens Institute of Technology students — find housing, buy and sell items, and connect with other students in real time.
 
