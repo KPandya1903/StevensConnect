@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { MarketplaceListingRow } from '../components/listings/MarketplaceListingRow';
 import { ListingFilters } from '../components/listings/ListingFilters';
 import { Spinner } from '../components/ui/Spinner';
+import { WelcomeModal } from '../components/ui/WelcomeModal';
 import { useListings } from '../hooks/useListings';
 
 export function MarketplacePage() {
@@ -12,8 +14,18 @@ export function MarketplacePage() {
     setFilters, resetFilters, loadMore, handleToggleSave, hasMore,
   } = useListings('marketplace');
 
+  const [showWelcome, setShowWelcome] = useState(
+    () => !localStorage.getItem('housemate_welcomed'),
+  );
+
+  function dismissWelcome() {
+    localStorage.setItem('housemate_welcomed', '1');
+    setShowWelcome(false);
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <WelcomeModal open={showWelcome} onClose={dismissWelcome} />
       <Navbar />
 
       <main className="mx-auto max-w-3xl px-4 py-6">
