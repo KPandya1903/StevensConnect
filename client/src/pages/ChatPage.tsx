@@ -11,8 +11,8 @@ const TYPING_DEBOUNCE_MS = 1500;
 
 function MessageTicks({ status }: { status: MessageStatus }) {
   if (status === 'sending') return null;
-  const gray = '#9ca3af';
-  const blue = '#2563eb';
+  const gray = '#c4b5fd';   // brand-300 — visible on dark bubble
+  const blue = '#a78bfa';   // brand-400 — read indicator
   if (status === 'sent') {
     return (
       <span className="inline-flex items-center ml-1">
@@ -47,7 +47,6 @@ export function ChatPage() {
     typingUsers, sendMessage, loadMore, emitTyping, emitStopTyping, emitMessagesRead,
   } = useMessages(conversationId!);
 
-  // Scroll to bottom on initial load and mark read
   useEffect(() => {
     if (!isLoading) {
       bottomRef.current?.scrollIntoView({ behavior: 'instant' });
@@ -55,7 +54,6 @@ export function ChatPage() {
     }
   }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mark read + scroll when new messages arrive while viewing
   const prevLengthRef = useRef(0);
   useEffect(() => {
     if (messages.length > prevLengthRef.current) {
@@ -63,7 +61,6 @@ export function ChatPage() {
       if (lastMsg?.senderId === user?.id) {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
       } else {
-        // New message from the other person — mark read immediately since we're viewing
         emitMessagesRead();
       }
       prevLengthRef.current = messages.length;
@@ -114,14 +111,14 @@ export function ChatPage() {
     <div className="flex h-screen flex-col bg-gray-50">
       <Navbar />
 
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-white px-4 py-3 flex items-center gap-3">
+      {/* Chat header */}
+      <div className="border-b border-gray-200/80 bg-white/90 px-4 py-3 flex items-center gap-3 backdrop-blur-sm">
         <button
           onClick={() => navigate('/messages')}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
+          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-800"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
           </svg>
           Back
         </button>
@@ -129,7 +126,7 @@ export function ChatPage() {
 
       {/* Messages area */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
+        className="flex-1 overflow-y-auto px-4 py-5 space-y-1"
         onScroll={handleScroll}
       >
         {isFetchingMore && (
@@ -140,7 +137,7 @@ export function ChatPage() {
         {hasMore && !isFetchingMore && (
           <button
             onClick={() => void loadMore()}
-            className="w-full text-center text-xs text-blue-500 hover:underline py-1"
+            className="w-full text-center text-xs text-brand-600 hover:underline py-1"
           >
             Load older messages
           </button>
@@ -152,7 +149,7 @@ export function ChatPage() {
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center pt-20 text-center">
-            <p className="text-sm text-gray-500">No messages yet. Say hello!</p>
+            <p className="text-sm text-gray-400">No messages yet. Say hello!</p>
           </div>
         ) : (
           messages.map((msg: Message, i: number) => {
@@ -171,10 +168,10 @@ export function ChatPage() {
                 )}
                 <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                   <div
-                    className={`max-w-[72%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed
+                    className={`max-w-[72%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm
                       ${isMine
-                        ? 'rounded-br-sm bg-blue-600 text-white'
-                        : 'rounded-bl-sm bg-white text-gray-900 border border-gray-200 shadow-sm'
+                        ? 'rounded-br-sm bg-gradient-to-br from-brand-600 to-violet-500 text-white'
+                        : 'rounded-bl-sm bg-white text-gray-900 border border-gray-200/80'
                       }
                       ${msg.isDeleted ? 'italic opacity-60' : ''}
                     `}
@@ -194,11 +191,11 @@ export function ChatPage() {
 
         {typingUsers.length > 0 && (
           <div className="flex justify-start pt-1">
-            <div className="rounded-2xl rounded-bl-sm border border-gray-200 bg-white px-4 py-2.5 shadow-sm">
+            <div className="rounded-2xl rounded-bl-sm border border-gray-200/80 bg-white px-4 py-2.5 shadow-sm">
               <div className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.3s]" />
-                <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.15s]" />
-                <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
+                <span className="h-2 w-2 rounded-full bg-brand-300 animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-2 w-2 rounded-full bg-brand-300 animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-2 w-2 rounded-full bg-brand-300 animate-bounce" />
               </div>
             </div>
           </div>
@@ -208,8 +205,8 @@ export function ChatPage() {
       </div>
 
       {/* Composer */}
-      <div className="border-t border-gray-200 bg-white px-4 py-3">
-        <div className="flex items-end gap-2">
+      <div className="border-t border-gray-200/80 bg-white/90 px-4 py-3 backdrop-blur-sm">
+        <div className="flex items-end gap-2.5">
           <textarea
             value={draft}
             onChange={handleDraftChange}
@@ -217,16 +214,16 @@ export function ChatPage() {
             placeholder="Message…"
             rows={1}
             maxLength={2000}
-            className="flex-1 resize-none rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm leading-relaxed placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+            className="flex-1 resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm leading-relaxed placeholder-gray-400 transition focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/15"
             style={{ maxHeight: '120px', overflowY: 'auto' }}
           />
           <button
             onClick={handleSend}
             disabled={!draft.trim()}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-violet-500 text-white shadow-sm transition hover:shadow-lift hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <svg className="h-5 w-5 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0-7 7m7-7 7 7" />
+            <svg className="h-4.5 w-4.5 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m0 0-7 7m7-7 7 7" />
             </svg>
           </button>
         </div>

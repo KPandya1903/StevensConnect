@@ -10,46 +10,52 @@ const features = [
     title: 'Listings',
     description: 'Post your apartment, sublet, or spare room for others to find.',
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
       </svg>
     ),
-    color: 'bg-blue-50 text-blue-600',
+    iconBg: 'bg-brand-100 text-brand-600',
   },
   {
     title: 'Roommates',
     description: 'Browse people looking for a place or a roommate to share with.',
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
       </svg>
     ),
-    color: 'bg-green-50 text-green-600',
+    iconBg: 'bg-sky-100 text-sky-600',
   },
   {
     title: 'Marketplace',
     description: 'Buy and sell textbooks, furniture, and anything else from the community.',
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
       </svg>
     ),
-    color: 'bg-purple-50 text-purple-600',
+    iconBg: 'bg-emerald-100 text-emerald-600',
   },
 ];
 
 export function WelcomeModal({ open, onClose }: Props) {
   return (
     <Modal open={open} onClose={onClose} size="max-w-md">
+      {/* Gradient accent strip */}
+      <div className="-mx-6 -mt-4 mb-5 h-1.5 rounded-t-xl bg-gradient-to-r from-brand-500 via-violet-500 to-indigo-400" />
+
       <div className="pb-2 text-center">
         <h2 className="text-xl font-bold text-gray-900">Welcome to House-Mate</h2>
         <p className="mt-1 text-sm text-gray-500">Here's what you can do on the platform:</p>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-5 space-y-2.5">
         {features.map((f) => (
-          <div key={f.title} className="flex items-start gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3.5">
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${f.color}`}>
+          <div
+            key={f.title}
+            className="flex items-start gap-3.5 rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3.5 transition hover:border-brand-200/60 hover:bg-white"
+          >
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${f.iconBg}`}>
               {f.icon}
             </div>
             <div>
@@ -62,9 +68,12 @@ export function WelcomeModal({ open, onClose }: Props) {
 
       <button
         onClick={onClose}
-        className="mt-6 w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-violet-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-lift"
       >
-        Got it →
+        Let's go
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+        </svg>
       </button>
     </Modal>
   );
