@@ -11,6 +11,7 @@
 
 import { ListingRepository, type CreateListingInput, type UpdateListingInput, type FindAllOptions } from '../repositories/ListingRepository';
 import { AppError } from '../middleware/errorHandler';
+import { geocodeAddress } from '../utils/geocode';
 import type { Listing, ListingStatus } from '@stevensconnect/shared';
 
 const MAX_IMAGES = 8;
@@ -39,6 +40,8 @@ function toListingShape(row: import('../repositories/ListingRepository').Listing
     condition: row.condition,
     imageUrls: row.image_urls.filter((u) => u.startsWith('http')),
     locationText: row.location_text,
+    lat: row.lat != null ? parseFloat(row.lat) : null,
+    lng: row.lng != null ? parseFloat(row.lng) : null,
     viewsCount: row.views_count,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
@@ -73,7 +76,8 @@ export const ListingService = {
       throw new AppError(422, 'Listing must have a price or be marked as free', 'MISSING_PRICE');
     }
 
-    const row = await ListingRepository.create({ ...input, userId });
+    const coords = input.locationText ? await geocodeAddress(input.locationText) : null;
+    const row = await ListingRepository.create({ ...input, userId, ...coords });
     return toListingShape(row);
   },
 
@@ -107,7 +111,10 @@ export const ListingService = {
     if (existing.user_id !== requesterId) throw new AppError(403, 'You do not own this listing', 'FORBIDDEN');
     if (existing.status !== 'active') throw new AppError(409, 'Only active listings can be edited', 'LISTING_NOT_ACTIVE');
 
-    const row = await ListingRepository.update(id, input);
+    const coords = input.locationText !== undefined && input.locationText !== existing.location_text
+      ? await geocodeAddress(input.locationText ?? '')
+      : undefined;
+    const row = await ListingRepository.update(id, { ...input, ...(coords ?? {}) });
     return toListingShape(row);
   },
 

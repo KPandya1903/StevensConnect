@@ -62,7 +62,7 @@ export function MarketplaceListingRow({ listing, onToggleSave }: MarketplaceList
         {onToggleSave && (
           <button
             onClick={(e) => { e.preventDefault(); onToggleSave(id, !!isSaved); }}
-            className={`rounded-full p-1.5 transition hover:scale-110 ${isSaved ? 'text-rose-500' : 'text-gray-300 hover:text-rose-400'}`}
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition hover:scale-110 ${isSaved ? 'text-rose-500' : 'text-gray-300 hover:text-rose-400'}`}
             aria-label={isSaved ? 'Unsave' : 'Save'}
           >
             <svg className={`h-4.5 w-4.5 ${isSaved ? 'fill-rose-500' : 'fill-none'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

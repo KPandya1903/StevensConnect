@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet popup — remove default padding so ListingMapPin fills edge-to-edge */
+.leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(109, 40, 217, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(196, 181, 253, 0.4);
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+.leaflet-popup-tip-container {
+  display: none;
+}
+
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;

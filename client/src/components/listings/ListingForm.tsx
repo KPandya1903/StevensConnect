@@ -242,7 +242,7 @@ export function ListingForm({
             </select>
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Bedrooms" error={errors.bedrooms?.message}>
               <input {...register('bedrooms')} type="number" min={0} max={20} className={inputCls} placeholder="0 = Studio" />
             </Field>
@@ -251,7 +251,7 @@ export function ListingForm({
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Available from" error={errors.availableFrom?.message}>
               <input {...register('availableFrom')} type="date" className={inputCls} />
             </Field>

@@ -54,7 +54,7 @@ export function ListingCard({ listing, onToggleSave }: ListingCardProps) {
               e.preventDefault();
               onToggleSave(id, !!isSaved);
             }}
-            className="absolute right-2.5 top-2.5 rounded-full bg-white/90 p-1.5 shadow-md backdrop-blur-sm transition hover:scale-110 hover:bg-white"
+            className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition hover:scale-110 hover:bg-white"
             aria-label={isSaved ? 'Unsave listing' : 'Save listing'}
           >
             <svg

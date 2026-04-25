@@ -37,6 +37,8 @@ export interface Listing {
   // Shared
   imageUrls: string[];
   locationText: string | null;
+  lat: number | null;
+  lng: number | null;
   viewsCount: number;
   createdAt: string;
   updatedAt: string;

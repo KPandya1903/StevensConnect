@@ -40,7 +40,7 @@ export function Modal({ open, onClose, title, children, size = 'max-w-lg' }: Mod
 
       {/* Panel */}
       <div
-        className={`relative w-full ${size} rounded-xl bg-white shadow-xl`}
+        className={`relative mx-4 w-full sm:mx-0 ${size} rounded-xl bg-white shadow-xl`}
         role="dialog"
         aria-modal="true"
       >

@@ -15,6 +15,7 @@ import { SavesPage } from '../pages/SavesPage';
 import { MyProfilePage } from '../pages/MyProfilePage';
 import { PublicProfilePage } from '../pages/PublicProfilePage';
 import { RoommatesPage } from '../pages/RoommatesPage';
+import { MapPage } from '../pages/MapPage';
 
 export function AppRoutes() {
   return (
@@ -41,6 +42,7 @@ export function AppRoutes() {
           <Route path="/profile/me" element={<MyProfilePage />} />
           <Route path="/profile/:username" element={<PublicProfilePage />} />
           <Route path="/saves" element={<SavesPage />} />
+          <Route path="/map" element={<MapPage />} />
         </Route>
       </Route>
 

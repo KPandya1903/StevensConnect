@@ -40,6 +40,8 @@ export interface ListingRow {
   condition: ItemCondition | null;
   image_urls: string[];
   location_text: string | null;
+  lat: string | null;   // pg returns DOUBLE PRECISION as string
+  lng: string | null;
   views_count: number;
   created_at: Date;
   updated_at: Date;
@@ -75,6 +77,8 @@ export interface CreateListingInput {
   marketplaceCategory?: MarketplaceCategory | null;
   condition?: ItemCondition | null;
   locationText?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface UpdateListingInput {
@@ -94,6 +98,8 @@ export interface UpdateListingInput {
   marketplaceCategory?: MarketplaceCategory | null;
   condition?: ItemCondition | null;
   locationText?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface FindAllOptions {
@@ -127,12 +133,12 @@ export const ListingRepository = {
         user_id, listing_type, title, description, price, is_free,
         housing_subtype, address, bedrooms, bathrooms,
         available_from, available_until, is_furnished, pets_allowed, utilities_included,
-        marketplace_category, condition, location_text
+        marketplace_category, condition, location_text, lat, lng
       ) VALUES (
         $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10,
         $11, $12, $13, $14, $15,
-        $16, $17, $18
+        $16, $17, $18, $19, $20
       ) RETURNING *`,
       [
         input.userId, input.listingType, input.title, input.description,
@@ -142,7 +148,7 @@ export const ListingRepository = {
         input.availableFrom ?? null, input.availableUntil ?? null,
         input.isFurnished ?? null, input.petsAllowed ?? null, input.utilitiesIncluded ?? null,
         input.marketplaceCategory ?? null, input.condition ?? null,
-        input.locationText ?? null,
+        input.locationText ?? null, input.lat ?? null, input.lng ?? null,
       ],
     );
     return rows[0];
@@ -296,6 +302,8 @@ export const ListingRepository = {
       ['marketplaceCategory', 'marketplace_category'],
       ['condition', 'condition'],
       ['locationText', 'location_text'],
+      ['lat', 'lat'],
+      ['lng', 'lng'],
     ];
 
     for (const [inputKey, dbCol] of fieldMap) {

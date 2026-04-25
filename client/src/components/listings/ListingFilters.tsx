@@ -74,13 +74,13 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
       </div>
 
       {/* Filter row */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         {/* Type selector — only shown when not in a fixed-type context */}
         {!fixedType && (
           <select
             value={filters.type ?? ''}
             onChange={(e) => onChange({ type: (e.target.value as ListingType) || undefined })}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none sm:w-auto"
           >
             <option value="">All types</option>
             <option value="marketplace">Marketplace</option>
@@ -95,7 +95,7 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
             onChange={(e) =>
               onChange({ category: (e.target.value as MarketplaceCategory) || undefined })
             }
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none sm:w-auto"
           >
             <option value="">All categories</option>
             {MARKETPLACE_CATEGORIES.map((c) => (
@@ -111,7 +111,7 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
             onChange={(e) =>
               onChange({ housingSubtype: (e.target.value as HousingSubtype) || undefined })
             }
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none sm:w-auto"
           >
             <option value="">All subtypes</option>
             {HOUSING_SUBTYPES.map((s) => (
@@ -130,9 +130,9 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
             onChange={(e) =>
               onChange({ minPrice: e.target.value ? parseFloat(e.target.value) : undefined })
             }
-            className="w-20 rounded-lg border border-gray-300 px-2 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none sm:w-24"
           />
-          <span className="text-gray-400">–</span>
+          <span className="shrink-0 text-gray-400">–</span>
           <input
             type="number"
             placeholder="Max $"
@@ -141,7 +141,7 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
             onChange={(e) =>
               onChange({ maxPrice: e.target.value ? parseFloat(e.target.value) : undefined })
             }
-            className="w-20 rounded-lg border border-gray-300 px-2 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none sm:w-24"
           />
         </div>
 
@@ -151,7 +151,7 @@ export function ListingFilters({ filters, onChange, onReset, fixedType }: Listin
           onChange={(e) =>
             onChange({ sort: e.target.value as ListingFilters['sort'] })
           }
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none sm:w-auto"
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
