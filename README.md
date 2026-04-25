@@ -1,4 +1,4 @@
-# House - Mate
+# House-Mate
 
 A marketplace and networking platform for Stevens Institute of Technology students — find housing, buy and sell items, and connect with other students in real time.
 
@@ -147,7 +147,7 @@ See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 ## Project Structure
 
 ```
-stevensconnect/
+House-Mate/
 ├── .github/workflows/ci.yml   GitHub Actions CI
 ├── client/                    React + Vite frontend
 │   └── src/
